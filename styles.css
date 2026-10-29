@@ -58,7 +58,8 @@ nav a {
 nav a:hover { color: var(--texto); }
 
 .hero {
-  padding: 88px 0 72px;
+  padding-top: 88px;
+  padding-bottom: 72px;
 }
 
 .hero h1 {
@@ -212,7 +213,35 @@ footer p { margin: 4px 0; }
 }
 
 @media (max-width: 600px) {
-  nav a { margin-left: 14px; font-size: 14px; }
-  .hero { padding: 56px 0 48px; }
-  .contacto { padding: 24px; }
+  body { font-size: 16px; }
+
+  /* En el celular el menú queda solo con "Contacto", como botón */
+  header .contenedor { height: 60px; }
+  nav a { display: none; }
+  nav a[href$="#contacto"] {
+    display: inline-block;
+    margin-left: 0;
+    padding: 7px 14px;
+    border: 1px solid var(--acento);
+    border-radius: 999px;
+    color: var(--acento);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .hero { padding-top: 44px; padding-bottom: 40px; }
+  .hero h1 { font-size: 30px; }
+  .hero p { font-size: 17px; margin-bottom: 26px; }
+  .boton { display: block; text-align: center; padding: 15px 24px; }
+
+  section { padding: 36px 0; }
+  section h2 { font-size: 24px; margin-bottom: 20px; }
+  .tarjetas { gap: 14px; }
+  .tarjeta { padding: 20px; }
+  .pasos li { padding-left: 46px; }
+  .contacto { padding: 24px 20px; }
+
+  .legal { padding: 36px 20px 56px; }
+  .legal h1 { font-size: 28px; }
+  .legal h2 { font-size: 19px; margin-top: 32px; }
 }
