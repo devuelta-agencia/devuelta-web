@@ -113,6 +113,39 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
   .numbers { grid-template-columns: 1fr; }
   .scene { min-height: 140px; }
 }
+.solo-movil { display: none; }
+.chat, .agenda { position: relative; }
+/* Celular: tres pantallas. Bienvenida, chat que entra justo en la pantalla y números. */
+@media (max-width: 759px) {
+  .solo-movil { display: block; width: 100%; margin-top: 16px; }
+  .pager { order: 9; }
+  :root[data-pantalla="bienvenida"] .panel, :root[data-pantalla="bienvenida"] .cta { display: none; }
+  :root[data-pantalla="bienvenida"] .wrap { min-height: 100vh; min-height: 100dvh; }
+  :root[data-pantalla="bienvenida"] .intro { flex: 1; justify-content: center; gap: 12px; }
+  :root[data-pantalla="bienvenida"] .intro h1 { font-size: 26px; line-height: 1.2; }
+  :root[data-pantalla="bienvenida"] .intro p { font-size: 17px; }
+  :root[data-pantalla="bienvenida"] #toCalc { align-self: center; }
+  :root[data-pantalla="chat"] .intro, :root[data-pantalla="chat"] .cta, :root[data-pantalla="chat"] .legal { display: none; }
+}
+@media (max-width: 759px) and (min-height: 480px) {
+  :root[data-pantalla="chat"], :root[data-pantalla="chat"] body { height: 100%; overflow: hidden; }
+  :root[data-pantalla="chat"] .wrap { height: 100vh; height: 100dvh; gap: 6px; padding-block: 8px max(8px, env(safe-area-inset-bottom, 0px)); }
+  :root[data-pantalla="chat"] .top { padding-bottom: 0; border-bottom: 0; }
+  :root[data-pantalla="chat"] .marca { font-size: 18px; line-height: 1.2; }
+  :root[data-pantalla="chat"] .panel { flex: 1; min-height: 0; gap: 8px; padding: 0; border: 0; background: none; }
+  :root[data-pantalla="chat"] .panel-head { gap: 4px 8px; padding-bottom: 0; border-bottom: 0; }
+  :root[data-pantalla="chat"] .tag { font-size: 12px; }
+  :root[data-pantalla="chat"] .scene { gap: 0; min-height: 80px; }
+  :root[data-pantalla="chat"] .when { font-size: 12px; }
+  :root[data-pantalla="chat"] .say { font-size: 15px; font-weight: 600; line-height: 1.3; }
+  :root[data-pantalla="chat"] .stage { flex: 1; min-height: 0; grid-template-rows: minmax(0, 1fr); }
+  :root[data-pantalla="chat"] .phone { min-height: 0; border-radius: 16px; }
+  :root[data-pantalla="chat"] .phone header { display: none; }
+  :root[data-pantalla="chat"] .chat, :root[data-pantalla="chat"] .agenda { flex: 1; height: auto; min-height: 0; overscroll-behavior: contain; }
+  :root[data-pantalla="chat"] .slot { padding: 6px 12px; }
+  :root[data-pantalla="chat"] .switch.who { display: flex; align-self: stretch; }
+  :root[data-pantalla="chat"] .switch.who button { flex: 1; }
+}
 </style>
 
 </head>
@@ -140,6 +173,7 @@ if (Date.now() >= new Date("2026-11-08T23:59:00-03:00").getTime()) {
   <section class="intro" id="intro">
     <h1>¡Hola! Te damos la bienvenida.</h1>
     <p>Esta demo muestra cómo un agente de WhatsApp podría encargarse de los turnos de tu negocio. Avanzá con Siguiente y jugá un poco: algunos botones del chat también responden. Al final vas a encontrar una calculadora para ver en números lo que te cuesta hoy esa tarea.</p>
+    <button type="button" class="btn main solo-movil" id="empezar">Empezar</button>
     <button type="button" class="link" id="toCalc">Ir directo a la calculadora</button>
   </section>
 
@@ -159,7 +193,7 @@ if (Date.now() >= new Date("2026-11-08T23:59:00-03:00").getTime()) {
     <button type="button" class="btn main" id="next">Siguiente</button>
   </div>
 
-  <div class="switch" id="who" role="group" aria-label="Qué pantalla ver">
+  <div class="switch who" id="who" role="group" aria-label="Qué pantalla ver">
     <button type="button" id="showA" data-show="a">Carla</button>
     <button type="button" id="showB" data-show="b">Tu agenda</button>
   </div>
@@ -302,8 +336,15 @@ $("avisoRegistro").hidden = !CANDIDATA;
 $("whatsapp").addEventListener("click", () => registrar("whatsapp"));
 const num = (n, d) => n.toLocaleString("es-AR", { minimumFractionDigits: 0, maximumFractionDigits: d });
 const money = n => "$" + Math.round(n).toLocaleString("es-AR");
-let step = 0, branch = "reprogramar", values = {};
+let step = 0, branch = "reprogramar", values = {}, bienvenida = true;
+const movil = window.matchMedia("(max-width: 759px)");
 const steps = () => BASE_STEPS.concat(BRANCHES[branch]);
+
+// Muestra desde el primer mensaje nuevo, así un mensaje largo no queda cortado por arriba.
+function verNuevos(el) {
+  const first = el.querySelector(".msg.new");
+  el.scrollTop = first ? first.offsetTop - 12 : el.scrollHeight;
+}
 
 function renderChat() {
   const msgs = steps().slice(0, step + 1).flatMap((s, i) => (s.chat || []).map(m => ({ ...m, fresh: i === step })));
@@ -337,7 +378,7 @@ function renderChat() {
     d.append(h);
     el.append(d);
   });
-  el.scrollTop = el.scrollHeight;
+  verNuevos(el);
 }
 
 function currentAgenda() {
@@ -440,10 +481,11 @@ function renderResult() {
 
 function render() {
   const all = steps(), last = all.length, atNumbers = step === last;
+  document.documentElement.dataset.pantalla = bienvenida ? "bienvenida" : atNumbers ? "numeros" : "chat";
   $("intro").hidden = step !== 0;
   $("toChat").hidden = !atNumbers;
   $("count").textContent = (step + 1) + " de " + (last + 1);
-  $("back").disabled = step === 0;
+  $("back").disabled = step === 0 && !movil.matches;
   $("next").textContent = atNumbers ? "Empezar de nuevo" : "Siguiente";
   $("stage").hidden = atNumbers;
   $("who").hidden = atNumbers;
@@ -467,10 +509,13 @@ function setShow(which) {
   $("showB").setAttribute("aria-pressed", which === "b");
   $("panelA").classList.toggle("on", which === "a");
   $("panelB").classList.toggle("on", which === "b");
-  $("chat").scrollTop = $("chat").scrollHeight;
+  verNuevos($("chat"));
+  const changed = [...$("agenda").querySelectorAll(".slot.changed")].pop();
+  if (changed) $("agenda").scrollTop = changed.offsetTop - 12;
 }
 
 function go(n) {
+  bienvenida = false;
   if (n > steps().length) { step = 0; branch = "reprogramar"; }
   else step = Math.max(0, n);
   render();
@@ -482,13 +527,16 @@ function fromHash() {
   const m = /^#paso-(\d+)(?:-(confirmar|reprogramar|cancelar))?$/.exec(location.hash);
   branch = m && m[2] ? m[2] : "reprogramar";
   step = m ? Math.min(Number(m[1]), steps().length) : 0;
+  if (step) bienvenida = false;
   render();
 }
 
 $("toCalc").addEventListener("click", () => go(steps().length));
 $("toChat").addEventListener("click", () => { branch = "reprogramar"; go(0); });
 $("next").addEventListener("click", () => go(step + 1));
-$("back").addEventListener("click", () => go(step - 1));
+$("back").addEventListener("click", () => { if (step === 0) { bienvenida = true; render(); } else go(step - 1); });
+$("empezar").addEventListener("click", () => go(0));
+movil.addEventListener("change", render);
 [$("showA"), $("showB")].forEach(b => b.addEventListener("click", () => setShow(b.dataset.show)));
 document.addEventListener("keydown", e => {
   if (e.target.tagName === "INPUT") return;
