@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Demo Consultorio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: una franja que narra la escena y, debajo, el teléfono de la clienta junto a la agenda de la profesional. */
+:root {
+  --bg: #faf8f5; --fg: #1f2328; --muted: #5b6169; --accent: #0f766e; --accent-soft: #e6f2f0; --line: #e4e0da;
+  --surface: #ffffff; --chat: #f1eee8; --mine: #d9f0e6; --on-accent: #ffffff;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #171a1c; --fg: #eceae6; --muted: #a4a9ad; --accent: #4cc2b4; --accent-soft: #1d3331; --line: #33383b;
+  --surface: #23272a; --chat: #1c2022; --mine: #1f4a40; --on-accent: #0b1f1d; color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #171a1c; --fg: #eceae6; --muted: #a4a9ad; --accent: #4cc2b4; --accent-soft: #1d3331; --line: #33383b;
+  --surface: #23272a; --chat: #1c2022; --mine: #1f4a40; --on-accent: #0b1f1d; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 980px; margin: 0 auto; padding-block: 16px 32px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 16px; }
+.top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.marca { font-weight: 700; font-size: 22px; letter-spacing: -0.02em; color: var(--fg); text-decoration: none; }
+.marca span { color: var(--accent); }
+.tag { font-size: 13px; color: var(--muted); }
+.vencida .wrap { display: none; }
+.vencida-aviso { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 64px 16px; text-align: center; }
+.vencida-aviso p { margin: 0; font-size: 20px; font-weight: 600; }
+.vencida-aviso .btn { display: inline-flex; align-items: center; text-decoration: none; }
+.intro { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.intro h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+.intro p { margin: 0; max-width: 62ch; color: var(--muted); }
+.link { font: inherit; font-size: 14px; font-weight: 600; color: var(--accent); background: none; border: 0; padding: 8px 0; cursor: pointer; text-decoration: underline; }
+.back-link { align-self: flex-start; }
+.cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; padding: 20px; border-radius: 16px; background: var(--accent-soft); }
+.cta > div { min-width: 0; flex: 1 1 280px; }
+.cta h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+.cta p { margin: 4px 0 0; font-size: 15px; color: var(--muted); }
+.cta .btn { display: inline-flex; align-items: center; text-decoration: none; }
+.legal { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--muted); }
+.legal p { margin: 0; }
+.scene { display: flex; flex-direction: column; gap: 4px; min-height: 112px; }
+.when { font-size: 14px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
+.say { margin: 0; font-size: clamp(20px, 3vw, 26px); line-height: 1.3; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; max-width: 34em; }
+.pager { display: flex; align-items: center; gap: 12px; }
+.pager .count { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; margin-right: auto; }
+.btn { font: inherit; font-weight: 600; border-radius: 10px; padding: 10px 20px; min-height: 44px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+.btn.main { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn:disabled { opacity: .4; cursor: default; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.switch { display: none; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); align-self: flex-start; }
+.switch button { font: inherit; font-size: 14px; font-weight: 500; color: var(--muted); background: none; border: 0; border-radius: 7px; padding: 6px 12px; cursor: pointer; min-height: 36px; }
+.switch button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.stage { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.phone { min-width: 0; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 22px; overflow: hidden; background: var(--surface); }
+.phone header { padding: 10px 16px; border-bottom: 1px solid var(--line); }
+.phone h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.phone header span { display: block; font-size: 12px; color: var(--muted); }
+.phone.on { border-color: var(--accent); }
+.chat { height: clamp(320px, 50vh, 500px); overflow-y: auto; background: var(--chat); padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.msg { max-width: 88%; padding: 8px 12px; border-radius: 12px; background: var(--surface); align-self: flex-start; font-size: 15px; white-space: pre-line; overflow-wrap: anywhere; }
+.msg.me { background: var(--mine); align-self: flex-end; }
+.msg small { display: block; margin-top: 2px; font-size: 11px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.msg.new, .slot.new { animation: rise .25s ease-out; }
+@keyframes rise { from { transform: translateY(8px); opacity: .3; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .msg.new, .slot.new { animation: none; } }
+.replies { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.replies button { font: inherit; font-size: 14px; font-weight: 600; color: var(--accent); background: var(--accent-soft); border: 0; border-radius: 8px; padding: 8px 12px; min-height: 38px; cursor: pointer; }
+.replies button:disabled { opacity: .6; cursor: default; }
+.agenda { height: clamp(320px, 50vh, 500px); overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+.day { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+.slot { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 15px; }
+.slot time { font-weight: 600; font-variant-numeric: tabular-nums; }
+.slot span { color: var(--muted); }
+.slot strong { font-weight: 500; display: block; color: var(--fg); }
+.slot.free { border-style: dashed; }
+.slot.changed { background: var(--accent-soft); border-color: var(--accent); }
+.slot.changed span { color: var(--accent); }
+.from { display: block; font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 2px; }
+.notice { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 12px; margin-bottom: 8px; border: 1px solid var(--accent); border-radius: 10px; background: var(--accent-soft); font-size: 15px; }
+.notice strong { font-size: 13px; font-weight: 600; color: var(--accent); }
+.notice p { margin: 0; }
+.notice button { font: inherit; font-size: 14px; font-weight: 600; color: var(--on-accent); background: var(--accent); border: 0; border-radius: 8px; padding: 8px 12px; min-height: 38px; cursor: pointer; }
+.notice.new { animation: rise .25s ease-out; }
+@media (prefers-reduced-motion: reduce) { .notice.new { animation: none; } }
+.numbers { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+.fields { display: flex; flex-direction: column; gap: 12px; }
+.field { display: grid; grid-template-columns: minmax(0, 1fr) 128px; align-items: center; gap: 12px; }
+.field label { font-size: 15px; }
+.field input { font: inherit; font-weight: 600; width: 100%; min-height: 44px; padding: 8px 10px; text-align: right; font-variant-numeric: tabular-nums; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--fg); }
+.hint { margin: 0; font-size: 13px; color: var(--muted); }
+.result { display: flex; flex-direction: column; gap: 4px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.big { font-size: clamp(36px, 6vw, 52px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; color: var(--accent); font-variant-numeric: tabular-nums; }
+.side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.side h3 { margin: 0; font-size: 15px; font-weight: 600; }
+.side ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+@media (max-width: 759px) {
+  .stage { grid-template-columns: 1fr; }
+  .stage[data-show="a"] #panelB, .stage[data-show="b"] #panelA { display: none; }
+  .switch { display: inline-flex; }
+  .numbers { grid-template-columns: 1fr; }
+  .scene { min-height: 140px; }
+}
+</style>
+
+</head>
+<body>
+<section class="vencida-aviso" id="vencida" hidden>
+  <p>Esta demo ya no está disponible.</p>
+  <a class="btn main" href="https://devuelta.com.ar" target="_top">Conocé Devuelta</a>
+</section>
+<script>
+// La demo vence en esta fecha: lleva al sitio de Devuelta y, si el navegador no lo permite, muestra el aviso de arriba.
+if (Date.now() >= new Date("2026-11-08T23:59:00-03:00").getTime()) {
+  document.documentElement.classList.add("vencida");
+  document.getElementById("vencida").hidden = false;
+  try { location.replace("https://devuelta.com.ar"); } catch (e) {}
+}
+</script>
+
+<div class="wrap">
+  <div class="top">
+    <a class="marca" href="https://devuelta.com.ar" target="_blank" rel="noopener">devuelta<span>.</span></a>
+    <span class="tag">Maqueta con datos inventados</span>
+  </div>
+
+  <section class="intro" id="intro">
+    <h1>¡Hola! Te damos la bienvenida.</h1>
+    <p>Esta demo muestra cómo un agente de WhatsApp podría encargarse de los turnos de tu negocio. Avanzá con Siguiente y jugá un poco: algunos botones del chat también responden. Al final vas a encontrar una calculadora para ver en números lo que te cuesta hoy esa tarea.</p>
+    <button type="button" class="link" id="toCalc">Ir directo a la calculadora</button>
+  </section>
+
+  <section class="scene" aria-live="polite">
+    <span class="when" id="when"></span>
+    <p class="say" id="say"></p>
+  </section>
+
+  <div class="pager">
+    <span class="count" id="count"></span>
+    <button type="button" class="btn" id="back">Atrás</button>
+    <button type="button" class="btn main" id="next">Siguiente</button>
+  </div>
+
+  <button type="button" class="link back-link" id="toChat" hidden>Volver al chat de prueba</button>
+
+  <div class="switch" id="who" role="group" aria-label="Qué pantalla ver">
+    <button type="button" id="showA" data-show="a">Carla</button>
+    <button type="button" id="showB" data-show="b">Tu agenda</button>
+  </div>
+
+  <div class="stage" id="stage">
+    <article class="phone" id="panelA">
+      <header><h2>Carla</h2><span>Quiere un turno</span></header>
+      <div class="chat" id="chat"></div>
+    </article>
+    <article class="phone" id="panelB">
+      <header><h2>Tu agenda</h2><span>Se actualiza sola en Google Calendar</span></header>
+      <div class="agenda" id="agenda"></div>
+    </article>
+  </div>
+
+  <div class="numbers" id="numbers" hidden>
+    <div class="fields" id="fields"></div>
+    <div class="side">
+      <div class="result">
+        <span class="big" id="big"></span>
+        <span id="bigNote"></span>
+      </div>
+      <p class="hint">Este es el punto de partida. En el piloto medimos cuánto cambia con estos mismos números.</p>
+      <div>
+        <h3>Qué cambia para vos</h3>
+        <ul id="changes"></ul>
+      </div>
+    </div>
+  </div>
+
+  <section class="cta">
+    <div>
+      <h2>¿Te gustó? Juntémonos 15 minutos.</h2>
+      <p>Te cuento cómo se adaptaría a tu forma de trabajar.</p>
+    </div>
+    <a class="btn main" id="whatsapp" target="_blank" rel="noopener">Escribime por WhatsApp</a>
+  </section>
+
+  <footer class="legal">
+    <p>© 2026 Devuelta. Todos los derechos reservados.</p>
+    <p>Esta demo se comparte solo para que la conozcas. No se puede copiar, modificar ni distribuir sin autorización.</p>
+    <p id="avisoRegistro" hidden>Esta demo registra qué pasos se visitan, para mejorarla. No guarda los números que cargues. <a href="https://devuelta.com.ar/privacidad.html" target="_blank" rel="noopener">Privacidad</a>.</p>
+  </footer>
+</div>
+
+<script>
+// Cada paso suma mensajes al chat y puede reemplazar la agenda o mostrar un aviso. El aviso a la profesional todavía no existe en el agente real.
+const LAURA = { h: "15:00", who: "Laura B.", what: "Masaje descontracturante" };
+const MARTA = { h: "18:00", who: "Marta G.", what: "Limpieza facial" };
+function free(h) { return { h, free: true }; }
+const CARLA = "Carla M.", LIMPIEZA = "Limpieza facial";
+const CONFIRM = (verbo, dia, hora) => "Listo, Carla. Tu turno quedó " + verbo + ".\n\n📅 " + dia + " a las " + hora + "\n📍 Calle Ejemplo 123\n\nTe vamos a mandar un recordatorio el día anterior.";
+
+const BASE_STEPS = [
+  { when: "Martes 17/11, 22:15", show: "a", say: "Ya terminaste el día. Carla te escribe para pedir turno y no hace falta que contestes vos.",
+    agenda: [LAURA, free("16:00"), free("17:00"), MARTA, free("19:00")],
+    chat: [{ me: 1, t: "Hola! Quiero turno para una limpieza facial, puede ser el viernes a la tarde?", h: "22:15" }] },
+  { when: "Martes 17/11, 22:15", show: "a", say: "Le responde enseguida y le ofrece solo los horarios que están libres en tu agenda.",
+    chat: [{ t: "Hola. Soy el asistente virtual de Estética Ejemplo.\n\nNuestros horarios de atención habituales son:\nLunes a viernes: 15:00 a 20:00\n\nLa disponibilidad exacta se confirma al elegir el día.\n\nPuedo ofrecerte para el viernes 20/11 a las: 16:00, 17:00, 19:00.\nPara reservar el turno, indicame por favor el horario que preferís y tu nombre y apellido.", h: "22:15" }] },
+  { when: "Martes 17/11, 22:17", show: "b", say: "Carla manda un audio y el agente lo entiende. El turno aparece solo en tu agenda.",
+    agenda: [LAURA, free("16:00"), { h: "17:00", who: CARLA, what: LIMPIEZA, changed: 1 }, MARTA, free("19:00")],
+    chat: [{ me: 1, t: "🎤 Audio (0:06): \"A las 5. Carla Méndez.\"", h: "22:17" }, { t: CONFIRM("reservado", "Viernes 20/11", "17:00"), h: "22:17" }] },
+  { when: "Martes 17/11, 22:18", show: "a", say: "Los precios los responde con tu lista, sin que tengas que contestar vos.",
+    agenda: [LAURA, free("16:00"), { h: "17:00", who: CARLA, what: LIMPIEZA }, MARTA, free("19:00")],
+    chat: [{ me: 1, t: "Una pregunta, cuánto sale la limpieza?", h: "22:18" }, { t: "La limpieza facial sale $25.000.", h: "22:18" }] },
+  { when: "Martes 17/11, 22:19", show: "a", say: "Si la consulta necesita tu criterio, no opina. Te la pasa a vos con un aviso y le pregunta si mantiene el turno.",
+    notice: { t: "Carla M. pregunta si la limpieza facial le sirve teniendo rosácea. Tiene turno el viernes 20/11 a las 17:00." },
+    chat: [{ me: 1, t: "Y me sirve si tengo rosácea?", h: "22:19" }, { t: "Eso lo tiene que evaluar la profesional, así que le paso tu consulta y te responde ella en horario de atención. Mientras tanto, ¿querés que te mantenga reservado el turno?", h: "22:19" }] },
+  { when: "Martes 17/11, 22:20", show: "a", say: "Carla decide, y el turno sigue reservado mientras evaluás.",
+    notice: { t: "Carla M. pregunta si la limpieza facial le sirve teniendo rosácea. Tiene turno el viernes 20/11 a las 17:00." },
+    chat: [{ me: 1, t: "Sí, dale.", h: "22:20" }, { t: "Listo, queda reservado.", h: "22:20" }] },
+  { when: "Miércoles 18/11, 15:10", show: "a", say: "En tu horario de atención, le respondés vos desde tu WhatsApp. La decisión sigue siendo tuya.",
+    notice: { t: "Carla M. pregunta si la limpieza facial le sirve teniendo rosácea. Tiene turno el viernes 20/11 a las 17:00.", done: "Ya le respondiste" },
+    chat: [{ from: "La profesional te escribió", t: "Hola Carla, gracias por avisar. ¿Podés llegar 15 minutos antes de tu turno, así evaluamos la situación?", h: "15:10" }] },
+  { when: "Miércoles 18/11, 15:14", show: "b", say: "Carla le confirma, y vos te organizás sabiendo que llega 15 minutos antes.",
+    notice: { t: "Perfecto, llego 15 minutos antes. ¡Gracias!", done: "Carla te respondió por WhatsApp" },
+    chat: [{ me: 1, t: "Perfecto, llego 15 minutos antes. ¡Gracias!", h: "15:14" }] },
+  { when: "Jueves 19/11, 9:00", show: "a", say: "El día anterior le llega el recordatorio, con tres botones para responder en un toque.",
+    chat: [{ t: "Hola Carla. Te recordamos tu turno de mañana a las 17:00.", h: "9:00", replies: ["Confirmar", "Reprogramar", "Cancelar"] }] }
+];
+
+// Qué pasa según el botón que toca Carla en el recordatorio. "Siguiente" sigue el camino de reprogramar.
+const BRANCHES = {
+  confirmar: [
+    { when: "Jueves 19/11, 9:02", show: "a", say: "Si toca Confirmar, el agente le vuelve a mandar los datos del turno.",
+      chat: [{ me: 1, t: "Confirmar", h: "9:02" }, { t: "Gracias, Carla. Tu turno quedó confirmado.\n\n📅 Viernes 20/11 a las 17:00\n📍 Calle Ejemplo 123\n\nTe esperamos.", h: "9:02" }] }
+  ],
+  reprogramar: [
+    { when: "Jueves 19/11, 9:05", show: "a", say: "Si no puede ir, toca Reprogramar y el agente le pregunta para cuándo.",
+      chat: [{ me: 1, t: "Reprogramar", h: "9:05" }, { t: "¿Para qué día y hora querés cambiarlo?", h: "9:05" }] },
+    { when: "Jueves 19/11, 9:06", show: "b", say: "Lo cambia ella misma. El horario del viernes a las 17 vuelve a quedar libre con un día de margen.",
+      agenda: [LAURA, free("16:00"), { ...free("17:00"), changed: 1 }, MARTA, free("19:00")],
+      extra: { day: "Lunes 23/11", slots: [{ h: "19:00", who: CARLA, what: LIMPIEZA, changed: 1 }] },
+      chat: [{ me: 1, t: "El lunes a las 7", h: "9:06" }, { t: CONFIRM("reprogramado", "Lunes 23/11", "19:00"), h: "9:06" }] }
+  ],
+  cancelar: [
+    { when: "Jueves 19/11, 9:03", show: "a", say: "Si toca Cancelar, el agente primero confirma que eso es lo que quiere.",
+      chat: [{ me: 1, t: "Cancelar", h: "9:03" }, { t: "¿Confirmás que querés cancelar tu turno del viernes 20/11 a las 17:00?", h: "9:03" }] },
+    { when: "Jueves 19/11, 9:04", show: "b", say: "Cancela el turno, libera el horario con un día de margen y le ofrece otro.",
+      agenda: [LAURA, free("16:00"), { ...free("17:00"), changed: 1 }, MARTA, free("19:00")],
+      chat: [{ me: 1, t: "Sí", h: "9:04" }, { t: "Listo, Carla. Cancelé tu turno del viernes 20/11 a las 17:00. ¿Querés que te reserve otro día u horario?", h: "9:04" }] },
+    { when: "Jueves 19/11, 9:05", show: "a", say: "Si no quiere otro turno, cierra con cordialidad y la conversación queda abierta para más adelante.",
+      chat: [{ me: 1, t: "No, te agradezco.", h: "9:05" }, { t: "Gracias a vos, Carla. Cuando quieras otro turno, escribinos por acá.", h: "9:05" }] }
+  ]
+};
+
+const FIELDS = [
+  { id: "horas", label: "Horas por semana gestionando turnos", value: 6 },
+  { id: "valorHora", label: "Lo que vale una hora de tu trabajo ($)", value: 25000 }
+];
+const CHANGES = [
+  "Mirás tus turnos en Google Calendar, desde el celular.",
+  "Tus clientas siguen escribiendo por WhatsApp, a un número solo para turnos.",
+  "Cargamos tu lista de tratamientos y precios. Si cambia algo, nos avisás y la actualizamos.",
+  "Lo que necesita tu criterio te llega como un aviso, y le respondés vos a la clienta.",
+  "Si no te sirve, se apaga y volvés a trabajar como hoy."
+];
+
+const WHATSAPP_NUMERO = "5492213147922";
+const WHATSAPP_MENSAJE = "¡Hola Sol! Me encantó la demo de turnos, ¿nos vemos esta semana 15 minutos?";
+
+const $ = id => document.getElementById(id);
+$("whatsapp").href = "https://wa.me/" + WHATSAPP_NUMERO + "?text=" + encodeURIComponent(WHATSAPP_MENSAJE);
+
+// Solo registra si el enlace trae un código de candidata (?c=). Nunca envía los números de la calculadora.
+const CANDIDATA = (() => {
+  try {
+    const c = new URLSearchParams(location.search).get("c");
+    return /^[a-z0-9]{1,8}$/.test(c || "") ? c : null;
+  } catch (e) { return null; }
+})();
+let calculadoraUsada = false;
+function registrar(evento, paso, detalle) {
+  if (!CANDIDATA || document.documentElement.classList.contains("vencida")) return;
+  const q = new URLSearchParams({ demo: "turnos", c: CANDIDATA, evento, paso: paso || 0, detalle: detalle || "" });
+  try { fetch("https://devuelta-n8n-u80635.vm.elestio.app/webhook/demo-evento?" + q, { mode: "no-cors", keepalive: true }).catch(() => {}); } catch (e) {}
+}
+$("avisoRegistro").hidden = !CANDIDATA;
+$("whatsapp").addEventListener("click", () => registrar("whatsapp"));
+const num = (n, d) => n.toLocaleString("es-AR", { minimumFractionDigits: 0, maximumFractionDigits: d });
+const money = n => "$" + Math.round(n).toLocaleString("es-AR");
+let step = 0, branch = "reprogramar", values = {};
+const steps = () => BASE_STEPS.concat(BRANCHES[branch]);
+
+function renderChat() {
+  const msgs = steps().slice(0, step + 1).flatMap((s, i) => (s.chat || []).map(m => ({ ...m, fresh: i === step })));
+  const el = $("chat");
+  el.textContent = "";
+  msgs.forEach(m => {
+    const d = document.createElement("div");
+    d.className = "msg" + (m.me ? " me" : "") + (m.fresh ? " new" : "");
+    if (m.from) {
+      const from = document.createElement("strong");
+      from.className = "from";
+      from.textContent = m.from;
+      d.append(from);
+    }
+    d.append(m.t);
+    if (m.replies) {
+      const box = document.createElement("div");
+      box.className = "replies";
+      m.replies.forEach(r => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = r;
+        b.disabled = !m.fresh;
+        b.addEventListener("click", () => { branch = r.toLowerCase(); go(step + 1); });
+        box.append(b);
+      });
+      d.append(box);
+    }
+    const h = document.createElement("small");
+    h.textContent = m.h;
+    d.append(h);
+    el.append(d);
+  });
+  el.scrollTop = el.scrollHeight;
+}
+
+function currentAgenda() {
+  const all = steps();
+  for (let i = step; i >= 0; i--) if (all[i].agenda) return { slots: all[i].agenda, extra: all[i].extra, fresh: i === step };
+  return { slots: [], fresh: false };
+}
+
+function renderAgenda() {
+  const { slots, extra, fresh } = currentAgenda();
+  const el = $("agenda");
+  el.textContent = "";
+  const notice = steps()[step].notice;
+  if (notice) {
+    const box = document.createElement("div");
+    box.className = "notice" + (notice.done ? "" : " new");
+    const label = document.createElement("strong");
+    label.textContent = notice.done || "Aviso en tu WhatsApp";
+    const text = document.createElement("p");
+    text.textContent = notice.t;
+    box.append(label, text);
+    if (notice.action) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = notice.action;
+      b.addEventListener("click", () => go(step + 1));
+      box.append(b);
+    }
+    el.append(box);
+  }
+  const day = document.createElement("p");
+  day.className = "day";
+  day.textContent = "Viernes 20/11";
+  el.append(day);
+  const addSlot = s => {
+    const row = document.createElement("div");
+    row.className = "slot" + (s.free ? " free" : "") + (s.changed && fresh ? " changed new" : "");
+    const t = document.createElement("time");
+    t.textContent = s.h;
+    const info = document.createElement("span");
+    if (s.free) {
+      info.textContent = "Libre";
+    } else {
+      const who = document.createElement("strong");
+      who.textContent = s.who;
+      info.append(who, s.what);
+    }
+    row.append(t, info);
+    el.append(row);
+  };
+  slots.forEach(addSlot);
+  if (extra) {
+    const next = document.createElement("p");
+    next.className = "day";
+    next.textContent = extra.day;
+    el.append(next);
+    extra.slots.forEach(addSlot);
+  }
+}
+
+function renderNumbers() {
+  const wrap = $("fields");
+  wrap.textContent = "";
+  FIELDS.forEach(f => {
+    if (values[f.id] === undefined) values[f.id] = f.value;
+    const row = document.createElement("div");
+    row.className = "field";
+    const l = document.createElement("label");
+    l.htmlFor = f.id;
+    l.textContent = f.label;
+    const i = document.createElement("input");
+    i.id = f.id;
+    i.type = "number";
+    i.min = "0";
+    i.inputMode = "numeric";
+    i.value = values[f.id];
+    i.addEventListener("focus", () => i.select());
+    i.addEventListener("input", () => {
+      values[f.id] = Math.max(0, Number(i.value) || 0);
+      renderResult();
+      if (!calculadoraUsada) { calculadoraUsada = true; registrar("calculadora_uso"); }
+    });
+    row.append(l, i);
+    wrap.append(row);
+  });
+  const hint = document.createElement("p");
+  hint.className = "hint";
+  hint.textContent = "Los valores que aparecen son de ejemplo. Reemplazalos por los tuyos.";
+  wrap.append(hint);
+  $("changes").textContent = "";
+  CHANGES.forEach(c => { const li = document.createElement("li"); li.textContent = c; $("changes").append(li); });
+  renderResult();
+}
+
+function renderResult() {
+  const horasMes = values.horas * 52 / 12;
+  $("big").textContent = money(horasMes * values.valorHora) + " por mes";
+  $("bigNote").textContent = "Es lo que valen las " + num(horasMes, 0) + " horas por mes que hoy dedicás a gestionar turnos.";
+}
+
+function render() {
+  const all = steps(), last = all.length, atNumbers = step === last;
+  $("intro").hidden = step !== 0;
+  $("toChat").hidden = !atNumbers;
+  $("count").textContent = (step + 1) + " de " + (last + 1);
+  $("back").disabled = step === 0;
+  $("next").textContent = atNumbers ? "Empezar de nuevo" : "Siguiente";
+  $("stage").hidden = atNumbers;
+  $("who").hidden = atNumbers;
+  $("numbers").hidden = !atNumbers;
+  if (atNumbers) {
+    $("when").textContent = "Tus números";
+    $("say").textContent = "Esto es lo que hoy te cuesta gestionar los turnos, contado con tus datos.";
+    renderNumbers();
+    return;
+  }
+  $("when").textContent = all[step].when;
+  $("say").textContent = all[step].say;
+  renderChat();
+  renderAgenda();
+  setShow(all[step].show);
+}
+
+function setShow(which) {
+  $("stage").dataset.show = which;
+  $("showA").setAttribute("aria-pressed", which === "a");
+  $("showB").setAttribute("aria-pressed", which === "b");
+  $("panelA").classList.toggle("on", which === "a");
+  $("panelB").classList.toggle("on", which === "b");
+  $("chat").scrollTop = $("chat").scrollHeight;
+}
+
+function go(n) {
+  if (n > steps().length) { step = 0; branch = "reprogramar"; }
+  else step = Math.max(0, n);
+  render();
+  registrar(step === steps().length ? "calculadora" : "paso", step + 1, step >= BASE_STEPS.length ? branch : "");
+  try { history.replaceState(null, "", step ? "#paso-" + step + "-" + branch : "#inicio"); } catch (e) {}
+}
+
+function fromHash() {
+  const m = /^#paso-(\d+)(?:-(confirmar|reprogramar|cancelar))?$/.exec(location.hash);
+  branch = m && m[2] ? m[2] : "reprogramar";
+  step = m ? Math.min(Number(m[1]), steps().length) : 0;
+  render();
+}
+
+$("toCalc").addEventListener("click", () => go(steps().length));
+$("toChat").addEventListener("click", () => { branch = "reprogramar"; go(0); });
+$("next").addEventListener("click", () => go(step + 1));
+$("back").addEventListener("click", () => go(step - 1));
+[$("showA"), $("showB")].forEach(b => b.addEventListener("click", () => setShow(b.dataset.show)));
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "INPUT") return;
+  if (e.key === "ArrowRight") go(step + 1);
+  if (e.key === "ArrowLeft" && step > 0) go(step - 1);
+});
+window.addEventListener("hashchange", fromHash);
+fromHash();
+registrar("abrio", step + 1);
+</script>
+
+</body>
+</html>

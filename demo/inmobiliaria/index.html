@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Demo Inmobiliaria</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: una franja que narra la escena y, debajo, dos teléfonos: el del inquilino y el de la dueña. */
+:root {
+  --bg: #faf8f5; --fg: #1f2328; --muted: #5b6169; --accent: #0f766e; --accent-soft: #e6f2f0; --line: #e4e0da;
+  --surface: #ffffff; --chat: #f1eee8; --mine: #d9f0e6; --on-accent: #ffffff;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #171a1c; --fg: #eceae6; --muted: #a4a9ad; --accent: #4cc2b4; --accent-soft: #1d3331; --line: #33383b;
+  --surface: #23272a; --chat: #1c2022; --mine: #1f4a40; --on-accent: #0b1f1d; color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #171a1c; --fg: #eceae6; --muted: #a4a9ad; --accent: #4cc2b4; --accent-soft: #1d3331; --line: #33383b;
+  --surface: #23272a; --chat: #1c2022; --mine: #1f4a40; --on-accent: #0b1f1d; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 980px; margin: 0 auto; padding-block: 16px 32px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 16px; }
+.top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.marca { font-weight: 700; font-size: 22px; letter-spacing: -0.02em; color: var(--fg); text-decoration: none; }
+.marca span { color: var(--accent); }
+.tag { font-size: 13px; color: var(--muted); margin-right: auto; }
+.vencida .wrap { display: none; }
+.vencida-aviso { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 64px 16px; text-align: center; }
+.vencida-aviso p { margin: 0; font-size: 20px; font-weight: 600; }
+.vencida-aviso .btn { display: inline-flex; align-items: center; text-decoration: none; }
+.intro { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.intro h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+.intro p { margin: 0; max-width: 62ch; color: var(--muted); }
+.link { font: inherit; font-size: 14px; font-weight: 600; color: var(--accent); background: none; border: 0; padding: 8px 0; cursor: pointer; text-decoration: underline; }
+.back-link { align-self: flex-start; }
+.cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; padding: 20px; border-radius: 16px; background: var(--accent-soft); }
+.cta > div { min-width: 0; flex: 1 1 280px; }
+.cta h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+.cta p { margin: 4px 0 0; font-size: 15px; color: var(--muted); }
+.cta .btn { display: inline-flex; align-items: center; text-decoration: none; }
+.legal { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--muted); }
+.legal p { margin: 0; }
+.switch { display: inline-flex; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.switch button { font: inherit; font-size: 14px; font-weight: 500; color: var(--muted); background: none; border: 0; border-radius: 7px; padding: 6px 12px; cursor: pointer; min-height: 36px; }
+.switch button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.scene { display: flex; flex-direction: column; gap: 4px; min-height: 112px; }
+.when { font-size: 14px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
+.say { margin: 0; font-size: clamp(20px, 3vw, 26px); line-height: 1.3; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; max-width: 34em; }
+.pager { display: flex; align-items: center; gap: 12px; }
+.pager .count { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; margin-right: auto; }
+.btn { font: inherit; font-weight: 600; border-radius: 10px; padding: 10px 20px; min-height: 44px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+.btn.main { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn:disabled { opacity: .4; cursor: default; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.stage { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.phone { min-width: 0; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 22px; overflow: hidden; background: var(--surface); }
+.phone header { padding: 10px 16px; border-bottom: 1px solid var(--line); }
+.phone h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.phone header span { display: block; font-size: 12px; color: var(--muted); }
+.phone.on { border-color: var(--accent); }
+.chat { height: clamp(320px, 50vh, 500px); overflow-y: auto; background: var(--chat); padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.empty { margin: auto; font-size: 14px; color: var(--muted); text-align: center; max-width: 22em; }
+.msg { max-width: 88%; padding: 8px 12px; border-radius: 12px; background: var(--surface); align-self: flex-start; font-size: 15px; white-space: pre-line; overflow-wrap: anywhere; }
+.msg.me { background: var(--mine); align-self: flex-end; }
+.msg small { display: block; margin-top: 2px; font-size: 11px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.msg.new { animation: rise .25s ease-out; }
+@keyframes rise { from { transform: translateY(8px); opacity: .3; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .msg.new { animation: none; } }
+.replies { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.replies button { font: inherit; font-size: 14px; font-weight: 600; color: var(--accent); background: var(--accent-soft); border: 0; border-radius: 8px; padding: 8px 12px; min-height: 38px; cursor: pointer; }
+.replies button:disabled { opacity: .6; cursor: default; }
+.who { display: none; }
+.numbers { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+.fields { display: flex; flex-direction: column; gap: 12px; }
+.field { display: grid; grid-template-columns: minmax(0, 1fr) 128px; align-items: center; gap: 12px; }
+.field label { font-size: 15px; }
+.field input { font: inherit; font-weight: 600; width: 100%; min-height: 44px; padding: 8px 10px; text-align: right; font-variant-numeric: tabular-nums; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--fg); }
+.hint { margin: 0; font-size: 13px; color: var(--muted); }
+.result { display: flex; flex-direction: column; gap: 4px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.big { font-size: clamp(36px, 6vw, 52px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; color: var(--accent); font-variant-numeric: tabular-nums; }
+.side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.side h3 { margin: 0; font-size: 15px; font-weight: 600; }
+.side ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+@media (max-width: 759px) {
+  .stage { grid-template-columns: 1fr; }
+  .stage[data-show="a"] #phoneB, .stage[data-show="b"] #phoneA { display: none; }
+  .who { display: inline-flex; align-self: flex-start; }
+  .numbers { grid-template-columns: 1fr; }
+  .scene { min-height: 140px; }
+}
+</style>
+
+</head>
+<body>
+<section class="vencida-aviso" id="vencida" hidden>
+  <p>Esta demo ya no está disponible.</p>
+  <a class="btn main" href="https://devuelta.com.ar" target="_top">Conocé Devuelta</a>
+</section>
+<script>
+// La demo vence en esta fecha: lleva al sitio de Devuelta y, si el navegador no lo permite, muestra el aviso de arriba.
+if (Date.now() >= new Date("2026-11-08T23:59:00-03:00").getTime()) {
+  document.documentElement.classList.add("vencida");
+  document.getElementById("vencida").hidden = false;
+  try { location.replace("https://devuelta.com.ar"); } catch (e) {}
+}
+</script>
+
+<div class="wrap">
+  <div class="top">
+    <a class="marca" href="https://devuelta.com.ar" target="_blank" rel="noopener">devuelta<span>.</span></a>
+    <span class="tag">Maqueta con datos inventados</span>
+    <div class="switch" role="group" aria-label="Historia">
+      <button type="button" id="storyA" data-story="alquileres">Alquileres</button>
+      <button type="button" id="storyB" data-story="consultas">Consultas</button>
+    </div>
+  </div>
+
+  <section class="intro" id="intro">
+    <h1>¡Hola! Te damos la bienvenida.</h1>
+    <p>Esta demo muestra cómo un agente de WhatsApp podría encargarse de los avisos de alquileres y las consultas de tu inmobiliaria. Elegí una historia, avanzá con Siguiente y jugá un poco. Al final vas a encontrar una calculadora para ver en números lo que te cuesta hoy esa tarea.</p>
+    <button type="button" class="link" id="toCalc">Ir directo a la calculadora</button>
+  </section>
+
+  <section class="scene" aria-live="polite">
+    <span class="when" id="when"></span>
+    <p class="say" id="say"></p>
+  </section>
+
+  <div class="pager">
+    <span class="count" id="count"></span>
+    <button type="button" class="btn" id="back">Atrás</button>
+    <button type="button" class="btn main" id="next">Siguiente</button>
+  </div>
+
+  <button type="button" class="link back-link" id="toChat" hidden>Volver al chat de prueba</button>
+
+  <div class="switch who" role="group" aria-label="Qué teléfono ver">
+    <button type="button" id="showA" data-show="a"></button>
+    <button type="button" id="showB" data-show="b">Tu WhatsApp</button>
+  </div>
+
+  <div class="stage" id="stage">
+    <article class="phone" id="phoneA">
+      <header><h2 id="nameA"></h2><span id="subA"></span></header>
+      <div class="chat" id="chatA"></div>
+    </article>
+    <article class="phone" id="phoneB">
+      <header><h2>Tu WhatsApp</h2><span>Lo único que ves vos</span></header>
+      <div class="chat" id="chatB"></div>
+    </article>
+  </div>
+
+  <div class="numbers" id="numbers" hidden>
+    <div class="fields" id="fields"></div>
+    <div class="side">
+      <div class="result">
+        <span class="big" id="big"></span>
+        <span id="bigNote"></span>
+      </div>
+      <p class="hint" id="startNote"></p>
+      <div>
+        <h3>Qué cambia para vos</h3>
+        <ul id="changes"></ul>
+      </div>
+    </div>
+  </div>
+
+  <section class="cta">
+    <div>
+      <h2>¿Te gustó? Juntémonos 15 minutos.</h2>
+      <p>Te cuento cómo se adaptaría a tu forma de trabajar.</p>
+    </div>
+    <a class="btn main" id="whatsapp" target="_blank" rel="noopener">Escribime por WhatsApp</a>
+  </section>
+
+  <footer class="legal">
+    <p>© 2026 Devuelta. Todos los derechos reservados.</p>
+    <p>Esta demo se comparte solo para que la conozcas. No se puede copiar, modificar ni distribuir sin autorización.</p>
+    <p id="avisoRegistro" hidden>Esta demo registra qué pasos se visitan, para mejorarla. No guarda los números que cargues. <a href="https://devuelta.com.ar/privacidad.html" target="_blank" rel="noopener">Privacidad</a>.</p>
+  </footer>
+</div>
+
+<script>
+// "a" es el teléfono del inquilino o interesado; "b" es el de la dueña. "me" marca quién escribe en ese teléfono.
+const STORIES = {
+  alquileres: {
+    name: "Marcela", sub: "Inquilina de un departamento",
+    steps: [
+      { when: "Hoy", show: "b", say: "Todos los meses alguien busca el índice, hace las cuentas contrato por contrato y le escribe a cada inquilino. Vamos a seguir a Marcela." },
+      { when: "21/11, 9:00", show: "b", say: "Faltan diez días para el aumento de Marcela. Las cuentas ya están hechas. Vos solo las revisás.",
+        b: [{ t: "Buen día. Este mes ajustan 7 contratos. Te dejo las cuentas para que las mires:\n\nMarcela R.: $480.000 → $520.320 (IPC 8,4 %)\ny 6 más.", h: "9:00", replies: ["Aprobar y avisar"] }] },
+      { when: "21/11, 9:04", show: "a", say: "Cuatro minutos después, los siete inquilinos ya tienen su aviso. Nadie copió un mensaje.",
+        b: [{ me: 1, t: "Aprobar y avisar", h: "9:04" }],
+        a: [{ t: "Hola Marcela. Según tu contrato, desde el 1/12 tu alquiler pasa de $480.000 a $520.320 (IPC del trimestre: 8,4 %). Si tenés dudas, escribime por acá.", h: "9:04" }] },
+      { when: "21/11, 19:30", show: "a", say: "Lo que está en el contrato, lo responde. Lo demás te lo pasa a vos, con el motivo.",
+        a: [{ me: 1, t: "Hola, ¿hasta qué día puedo pagar?", h: "19:30" }, { t: "Hasta el 10 de cada mes, como dice tu contrato.", h: "19:30" }, { me: 1, t: "Gracias. Otra cosa: tengo una pérdida en el baño.", h: "19:31" }, { t: "Se lo paso a la inmobiliaria y te contactan en horario de oficina.", h: "19:31" }],
+        b: [{ t: "Marcela R. avisa que tiene una pérdida en el baño. Le dije que la contactan en horario de oficina.", h: "19:31" }] },
+      { when: "10/12, 18:00", show: "a", say: "El día del vencimiento, le recuerda solo a quien todavía no figura como pagado.",
+        a: [{ t: "Hola Marcela. Hoy vence tu alquiler de $520.320. Si ya pagaste, ignorá este mensaje.", h: "18:00" }, { me: 1, t: "Uh, me olvidé. Mañana te transfiero.", h: "18:12" }, { t: "Gracias por avisar. Queda anotado.", h: "18:12" }] },
+      { when: "11/12, 9:00", show: "b", say: "Ya no hace falta revisar los sesenta contratos. Sabés a qué tres personas llamar.",
+        b: [{ t: "Buen día. Alquileres de este mes:\n\n52 pagaron.\n5 avisaron que pagan esta semana, entre ellos Marcela R.\n3 no respondieron: Julián P., Ana G. y Ramón T. A esos te conviene llamarlos.", h: "9:00" }] }
+    ],
+    fields: [
+      { id: "contratos", label: "Contratos que administrás", value: 60 },
+      { id: "minContrato", label: "Minutos por contrato al mes en avisos y ajustes", value: 15 },
+      { id: "atrasos", label: "Inquilinos que pagaron tarde el último mes", value: 12 },
+      { id: "minAtraso", label: "Minutos de seguimiento por cada atraso", value: 30 },
+      { id: "valorHora", label: "Lo que te costaría pagarle a alguien una hora ($)", value: 7500 }
+    ],
+    result(v) {
+      const horas = (v.contratos * v.minContrato + v.atrasos * v.minAtraso) / 60;
+      return { big: num(horas, 1) + " h por mes", note: "Equivalen a " + money(horas * v.valorHora) + " por mes." };
+    },
+    changes: [
+      "Seguís en tu WhatsApp. No hay un sistema nuevo para aprender.",
+      "Revisás las cuentas una vez por mes, antes de que salgan.",
+      "Empezamos con pocos contratos. Si no te sirve, se apaga y seguís como hoy."
+    ]
+  },
+  consultas: {
+    name: "Lucía", sub: "Vio un departamento en un portal",
+    steps: [
+      { when: "Sábado, 22:40", show: "a", say: "La oficina está cerrada. Lucía le escribe a varias inmobiliarias a la vez.",
+        a: [{ me: 1, t: "Hola, vi el departamento de 2 ambientes en alquiler. ¿Sigue disponible?", h: "22:40" }] },
+      { when: "Sábado, 22:40", show: "a", say: "Le responden en segundos, con los datos de tu listado.",
+        a: [{ t: "Hola Lucía. Sí, sigue disponible: $450.000 por mes más $60.000 de expensas. ¿Para cuántas personas es y qué garantía tenés?", h: "22:40" }] },
+      { when: "Sábado, 22:42", show: "a", say: "Hace las preguntas que harías vos y agenda la visita en tu calendario.",
+        a: [{ me: 1, t: "Somos 2. Tengo garantía propietaria.", h: "22:42" }, { t: "Perfecto. Podés visitarlo el lunes a las 10 o el martes a las 17. ¿Cuál preferís?", h: "22:42" }, { me: 1, t: "Lunes a las 10.", h: "22:43" }, { t: "Listo, lunes a las 10. Te lo recuerdo el domingo a la tarde.", h: "22:43" }] },
+      { when: "Sábado, 22:44", show: "a", say: "Cuando no tiene un dato, lo dice y te lo pasa. No inventa.",
+        a: [{ me: 1, t: "¿Aceptan mascotas?", h: "22:44" }, { t: "Ese dato no lo tengo y no quiero decirte algo incorrecto. Se lo paso a la inmobiliaria y te responden el lunes.", h: "22:44" }] },
+      { when: "Lunes, 8:30", show: "b", say: "Llegás el lunes con la agenda armada y sabiendo a quién vas a ver.",
+        b: [{ t: "Buen día. Este fin de semana:\n\n9 consultas.\n4 buscan algo que tenés.\n2 visitas agendadas.\n\nHoy a las 10 viene Lucía M.: 2 personas, garantía propietaria. Te dejó una pregunta: ¿aceptan mascotas?", h: "8:30", replies: ["Responderle a Lucía"] }] }
+    ],
+    fields: [
+      { id: "porSemana", label: "Consultas por semana", value: 40 },
+      { id: "demoradas", label: "Consultas por semana que esperan más de una hora", value: 15 },
+      { id: "comision", label: "Lo que te deja una operación, en promedio ($)", value: 1500000 }
+    ],
+    result(v) {
+      return { big: num(v.demoradas * 52 / 12, 0) + " por mes", note: "Son las consultas que esperan más de una hora, de " + num(v.porSemana * 52 / 12, 0) + " que recibís. Cada operación que se concreta te deja " + money(v.comision) + "." };
+    },
+    changes: [
+      "Seguís en tu WhatsApp. No hay un sistema nuevo para aprender.",
+      "Cargamos tu listado una vez y lo mantenemos al día con vos.",
+      "Empezamos con pocas propiedades. Si no te sirve, se apaga y seguís como hoy."
+    ]
+  }
+};
+
+const WHATSAPP_NUMERO = "5492213147922";
+const WHATSAPP_MENSAJE = "¡Hola Sol! Me encantó la demo para inmobiliarias, ¿nos vemos esta semana 15 minutos?";
+
+const $ = id => document.getElementById(id);
+$("whatsapp").href = "https://wa.me/" + WHATSAPP_NUMERO + "?text=" + encodeURIComponent(WHATSAPP_MENSAJE);
+
+// Solo registra si el enlace trae un código de candidata (?c=). Nunca envía los números de la calculadora.
+const CANDIDATA = (() => {
+  try {
+    const c = new URLSearchParams(location.search).get("c");
+    return /^[a-z0-9]{1,8}$/.test(c || "") ? c : null;
+  } catch (e) { return null; }
+})();
+let calculadoraUsada = false;
+function registrar(evento, paso, detalle) {
+  if (!CANDIDATA || document.documentElement.classList.contains("vencida")) return;
+  const q = new URLSearchParams({ demo: "inmobiliaria", c: CANDIDATA, evento, paso: paso || 0, detalle: detalle || "" });
+  try { fetch("https://devuelta-n8n-u80635.vm.elestio.app/webhook/demo-evento?" + q, { mode: "no-cors", keepalive: true }).catch(() => {}); } catch (e) {}
+}
+$("avisoRegistro").hidden = !CANDIDATA;
+$("whatsapp").addEventListener("click", () => registrar("whatsapp"));
+const num = (n, d) => n.toLocaleString("es-AR", { minimumFractionDigits: 0, maximumFractionDigits: d });
+const money = n => "$" + Math.round(n).toLocaleString("es-AR");
+let story = "alquileres", step = 0, show = "b", values = {};
+
+function renderChat(el, key, name) {
+  const steps = STORIES[story].steps.slice(0, step + 1);
+  const msgs = steps.flatMap((s, i) => (s[key] || []).map(m => ({ ...m, fresh: i === step })));
+  el.textContent = "";
+  if (!msgs.length) {
+    const p = document.createElement("p");
+    p.className = "empty";
+    p.textContent = "Todavía no hay mensajes.";
+    el.append(p);
+  }
+  msgs.forEach(m => {
+    const d = document.createElement("div");
+    d.className = "msg" + (m.me ? " me" : "") + (m.fresh ? " new" : "");
+    d.textContent = m.t;
+    if (m.replies) {
+      const box = document.createElement("div");
+      box.className = "replies";
+      m.replies.forEach(r => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = r;
+        b.disabled = !m.fresh;
+        b.addEventListener("click", () => go(step + 1));
+        box.append(b);
+      });
+      d.append(box);
+    }
+    const h = document.createElement("small");
+    h.textContent = m.h;
+    d.append(h);
+    el.append(d);
+  });
+  el.scrollTop = el.scrollHeight;
+}
+
+function renderNumbers() {
+  const s = STORIES[story];
+  const wrap = $("fields");
+  wrap.textContent = "";
+  s.fields.forEach(f => {
+    if (values[f.id] === undefined) values[f.id] = f.value;
+    const row = document.createElement("div");
+    row.className = "field";
+    const l = document.createElement("label");
+    l.htmlFor = f.id;
+    l.textContent = f.label;
+    const i = document.createElement("input");
+    i.id = f.id;
+    i.type = "number";
+    i.min = "0";
+    i.inputMode = "numeric";
+    i.value = values[f.id];
+    i.addEventListener("focus", () => i.select());
+    i.addEventListener("input", () => {
+      values[f.id] = Math.max(0, Number(i.value) || 0);
+      renderResult();
+      if (!calculadoraUsada) { calculadoraUsada = true; registrar("calculadora_uso", 0, story); }
+    });
+    row.append(l, i);
+    wrap.append(row);
+  });
+  const hint = document.createElement("p");
+  hint.className = "hint";
+  hint.textContent = "Los valores que aparecen son de ejemplo. Reemplazalos por los tuyos.";
+  wrap.append(hint);
+  $("changes").textContent = "";
+  s.changes.forEach(c => { const li = document.createElement("li"); li.textContent = c; $("changes").append(li); });
+  renderResult();
+}
+
+function renderResult() {
+  const r = STORIES[story].result(values);
+  $("big").textContent = r.big;
+  $("bigNote").textContent = r.note;
+  $("startNote").textContent = "Este es el punto de partida. En el piloto medimos cuánto cambia con estos mismos números.";
+}
+
+function render() {
+  const s = STORIES[story], last = s.steps.length, atNumbers = step === last;
+  $("intro").hidden = step !== 0;
+  $("toChat").hidden = !atNumbers;
+  $("storyA").setAttribute("aria-pressed", story === "alquileres");
+  $("storyB").setAttribute("aria-pressed", story === "consultas");
+  $("count").textContent = (step + 1) + " de " + (last + 1);
+  $("back").disabled = step === 0;
+  $("next").textContent = atNumbers ? "Empezar de nuevo" : "Siguiente";
+  $("stage").hidden = atNumbers;
+  $("numbers").hidden = !atNumbers;
+  document.querySelector(".who").hidden = atNumbers;
+  if (atNumbers) {
+    $("when").textContent = "Tus números";
+    $("say").textContent = "Esto es lo que hoy te lleva, contado con tus datos.";
+    renderNumbers();
+    return;
+  }
+  const cur = s.steps[step];
+  $("when").textContent = cur.when;
+  $("say").textContent = cur.say;
+  $("nameA").textContent = s.name;
+  $("subA").textContent = s.sub;
+  $("showA").textContent = s.name;
+  renderChat($("chatA"), "a");
+  renderChat($("chatB"), "b");
+  setShow(cur.show);
+}
+
+function setShow(which) {
+  show = which;
+  $("stage").dataset.show = which;
+  $("showA").setAttribute("aria-pressed", which === "a");
+  $("showB").setAttribute("aria-pressed", which === "b");
+  $("phoneA").classList.toggle("on", which === "a");
+  $("phoneB").classList.toggle("on", which === "b");
+  (which === "a" ? $("chatA") : $("chatB")).scrollTop = 1e6;
+}
+
+function go(n) {
+  const last = STORIES[story].steps.length;
+  step = n > last ? 0 : Math.max(0, n);
+  render();
+  registrar(step === last ? "calculadora" : "paso", step + 1, story);
+  try { history.replaceState(null, "", "#" + story + (step ? "-" + step : "")); } catch (e) {}
+}
+
+function fromHash() {
+  const m = /^#(alquileres|consultas)(?:-(\d+))?$/.exec(location.hash);
+  if (m) { story = m[1]; step = Math.min(Number(m[2] || 0), STORIES[story].steps.length); }
+  render();
+}
+
+$("toCalc").addEventListener("click", () => go(STORIES[story].steps.length));
+$("toChat").addEventListener("click", () => go(0));
+$("next").addEventListener("click", () => go(step + 1));
+$("back").addEventListener("click", () => go(step - 1));
+[$("storyA"), $("storyB")].forEach(b => b.addEventListener("click", () => { story = b.dataset.story; values = {}; go(0); }));
+[$("showA"), $("showB")].forEach(b => b.addEventListener("click", () => setShow(b.dataset.show)));
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "INPUT") return;
+  if (e.key === "ArrowRight") go(step + 1);
+  if (e.key === "ArrowLeft" && step > 0) go(step - 1);
+});
+window.addEventListener("hashchange", fromHash);
+fromHash();
+registrar("abrio", step + 1, story);
+</script>
+
+</body>
+</html>
