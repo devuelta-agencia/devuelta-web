@@ -11,16 +11,16 @@
 /* Layout: una franja que narra la escena y, debajo, dos teléfonos: el del inquilino y el de la dueña. */
 :root {
   --bg: #faf8f5; --fg: #1f2328; --muted: #5b6169; --accent: #0f766e; --accent-soft: #e6f2f0; --line: #e4e0da;
-  --surface: #ffffff; --chat: #f1eee8; --mine: #d9f0e6; --on-accent: #ffffff;
+  --surface: #ffffff; --chat: #f1eee8; --mine: #d9f0e6; --on-accent: #ffffff; --panel: #fffdfa;
   --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #171a1c; --fg: #eceae6; --muted: #a4a9ad; --accent: #4cc2b4; --accent-soft: #1d3331; --line: #33383b;
-  --surface: #23272a; --chat: #1c2022; --mine: #1f4a40; --on-accent: #0b1f1d; color-scheme: dark;
+  --surface: #23272a; --chat: #1c2022; --mine: #1f4a40; --on-accent: #0b1f1d; --panel: #1d2123; color-scheme: dark;
 } }
 :root[data-theme="dark"] {
   --bg: #171a1c; --fg: #eceae6; --muted: #a4a9ad; --accent: #4cc2b4; --accent-soft: #1d3331; --line: #33383b;
-  --surface: #23272a; --chat: #1c2022; --mine: #1f4a40; --on-accent: #0b1f1d; color-scheme: dark;
+  --surface: #23272a; --chat: #1c2022; --mine: #1f4a40; --on-accent: #0b1f1d; --panel: #1d2123; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -39,6 +39,12 @@ body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--sa
 .intro p { margin: 0; max-width: 62ch; color: var(--muted); }
 .link { font: inherit; font-size: 14px; font-weight: 600; color: var(--accent); background: none; border: 0; padding: 8px 0; cursor: pointer; text-decoration: underline; }
 .back-link { align-self: flex-start; }
+.panel { display: flex; flex-direction: column; gap: 16px; min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: 20px; background: var(--panel); }
+.panel-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.story-note { flex-basis: 100%; }
+.pager .count { white-space: nowrap; }
+.pager .btn { white-space: nowrap; }
+@media (max-width: 759px) { .panel { padding: 12px; border-radius: 16px; } .pager { gap: 8px; } .pager .btn { padding-inline: 12px; } }
 .cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; padding: 20px; border-radius: 16px; background: var(--accent-soft); }
 .cta > div { min-width: 0; flex: 1 1 280px; }
 .cta h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
@@ -114,18 +120,25 @@ if (Date.now() >= new Date("2026-11-08T23:59:00-03:00").getTime()) {
 <div class="wrap">
   <div class="top">
     <a class="marca" href="https://devuelta.com.ar" target="_blank" rel="noopener">devuelta<span>.</span></a>
-    <span class="tag">Maqueta con datos inventados</span>
-    <div class="switch" role="group" aria-label="Historia">
-      <button type="button" id="storyA" data-story="alquileres">Alquileres</button>
-      <button type="button" id="storyB" data-story="consultas">Consultas</button>
-    </div>
   </div>
+
+  <button type="button" class="link back-link" id="toChat" hidden>Volver al chat de prueba</button>
 
   <section class="intro" id="intro">
     <h1>¡Hola! Te damos la bienvenida.</h1>
     <p>Esta demo muestra cómo un agente de WhatsApp podría encargarse de los avisos de alquileres y las consultas de tu inmobiliaria. Elegí una historia, avanzá con Siguiente y jugá un poco. Al final vas a encontrar una calculadora para ver en números lo que te cuesta hoy esa tarea.</p>
     <button type="button" class="link" id="toCalc">Ir directo a la calculadora</button>
   </section>
+
+  <section class="panel">
+  <div class="panel-head">
+    <div class="switch" role="group" aria-label="Historia">
+      <button type="button" id="storyA" data-story="alquileres">Alquileres</button>
+      <button type="button" id="storyB" data-story="consultas">Consultas</button>
+    </div>
+    <span class="tag">Todos los datos son inventados, a modo de ejemplo.</span>
+    <p class="hint story-note" id="storyNote" hidden></p>
+  </div>
 
   <section class="scene" aria-live="polite">
     <span class="when" id="when"></span>
@@ -137,8 +150,6 @@ if (Date.now() >= new Date("2026-11-08T23:59:00-03:00").getTime()) {
     <button type="button" class="btn" id="back">Atrás</button>
     <button type="button" class="btn main" id="next">Siguiente</button>
   </div>
-
-  <button type="button" class="link back-link" id="toChat" hidden>Volver al chat de prueba</button>
 
   <div class="switch who" role="group" aria-label="Qué teléfono ver">
     <button type="button" id="showA" data-show="a"></button>
@@ -170,6 +181,7 @@ if (Date.now() >= new Date("2026-11-08T23:59:00-03:00").getTime()) {
       </div>
     </div>
   </div>
+  </section>
 
   <section class="cta">
     <div>
@@ -191,6 +203,7 @@ if (Date.now() >= new Date("2026-11-08T23:59:00-03:00").getTime()) {
 const STORIES = {
   alquileres: {
     name: "Marcela", sub: "Inquilina de un departamento",
+    note: "El índice de aumento, los montos y cualquier dato sensible se definen más adelante, con vos y según cada contrato. Lo que ves acá es solo un ejemplo.",
     steps: [
       { when: "Hoy", show: "b", say: "Todos los meses alguien busca el índice, hace las cuentas contrato por contrato y le escribe a cada inquilino. Vamos a seguir a Marcela." },
       { when: "21/11, 9:00", show: "b", say: "Faltan diez días para el aumento de Marcela. Las cuentas ya están hechas. Vos solo las revisás.",
@@ -359,6 +372,8 @@ function render() {
   const s = STORIES[story], last = s.steps.length, atNumbers = step === last;
   $("intro").hidden = step !== 0;
   $("toChat").hidden = !atNumbers;
+  $("storyNote").hidden = !s.note;
+  $("storyNote").textContent = s.note || "";
   $("storyA").setAttribute("aria-pressed", story === "alquileres");
   $("storyB").setAttribute("aria-pressed", story === "consultas");
   $("count").textContent = (step + 1) + " de " + (last + 1);
