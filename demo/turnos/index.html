@@ -146,6 +146,16 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
   :root[data-pantalla="chat"] .switch.who { display: flex; align-self: stretch; }
   :root[data-pantalla="chat"] .switch.who button { flex: 1; }
 }
+.ir-pestana { display: none; }
+/* Celular: cuando lo nuevo quedó en la otra pantalla, un botón flotante y un puntito en la pestaña llevan hasta ahí. */
+@media (max-width: 759px) {
+  .stage { position: relative; }
+  .ir-pestana { display: block; position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); width: max-content; max-width: calc(100% - 24px); font: inherit; font-size: 14px; font-weight: 600; color: var(--on-accent); background: var(--accent); border: 0; border-radius: 999px; padding: 10px 16px; min-height: 44px; cursor: pointer; box-shadow: 0 4px 14px rgba(0, 0, 0, .25); animation: llamar 1.6s ease-in-out infinite; }
+  .stage.con-aviso .chat, .stage.con-aviso .agenda { padding-bottom: 64px; }
+  .switch button.pendiente::after { content: ""; display: inline-block; width: 8px; height: 8px; margin-left: 6px; border-radius: 50%; background: var(--accent); vertical-align: middle; }
+}
+@keyframes llamar { 0%, 100% { transform: translateX(-50%); } 50% { transform: translateX(-50%) translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) { .ir-pestana { animation: none; } }
 </style>
 
 </head>
@@ -207,6 +217,7 @@ if (Date.now() >= new Date("2026-11-08T23:59:00-03:00").getTime()) {
       <header><h2>Tu agenda</h2><span>Se actualiza sola en Google Calendar</span></header>
       <div class="agenda" id="agenda"></div>
     </article>
+  <button type="button" class="ir-pestana" id="irPestana" hidden></button>
   </div>
 
   <div class="numbers" id="numbers" hidden>
@@ -336,7 +347,7 @@ $("avisoRegistro").hidden = !CANDIDATA;
 $("whatsapp").addEventListener("click", () => registrar("whatsapp"));
 const num = (n, d) => n.toLocaleString("es-AR", { minimumFractionDigits: 0, maximumFractionDigits: d });
 const money = n => "$" + Math.round(n).toLocaleString("es-AR");
-let step = 0, branch = "reprogramar", values = {}, bienvenida = true;
+let step = 0, branch = "reprogramar", values = {}, bienvenida = true, pendiente = null;
 const movil = window.matchMedia("(max-width: 759px)");
 const steps = () => BASE_STEPS.concat(BRANCHES[branch]);
 
@@ -500,7 +511,21 @@ function render() {
   $("say").textContent = all[step].say;
   renderChat();
   renderAgenda();
-  setShow(all[step].show);
+  const cur = all[step], previo = all[step - 1];
+  // Solo señala lo que de verdad es nuevo: un mensaje que no escribió Carla o un aviso que recién llega.
+  if (cur.show === "b" && (cur.chat || []).some(m => !m.me)) senalar("a", "Mirá lo que le llegó a Carla →");
+  else if (cur.show === "a" && cur.notice && !cur.notice.done && !(previo && previo.notice)) senalar("b", "Mirá el aviso que te llegó →");
+  else senalar(null);
+  setShow(cur.show);
+}
+
+function senalar(destino, texto) {
+  pendiente = destino;
+  $("irPestana").textContent = texto || "";
+  $("irPestana").hidden = !destino;
+  $("stage").classList.toggle("con-aviso", !!destino);
+  $("showA").classList.toggle("pendiente", destino === "a");
+  $("showB").classList.toggle("pendiente", destino === "b");
 }
 
 function setShow(which) {
@@ -537,7 +562,11 @@ $("next").addEventListener("click", () => go(step + 1));
 $("back").addEventListener("click", () => { if (step === 0) { bienvenida = true; render(); } else go(step - 1); });
 $("empezar").addEventListener("click", () => go(0));
 movil.addEventListener("change", render);
-[$("showA"), $("showB")].forEach(b => b.addEventListener("click", () => setShow(b.dataset.show)));
+[$("showA"), $("showB")].forEach(b => b.addEventListener("click", () => {
+  setShow(b.dataset.show);
+  if (b.dataset.show === pendiente) senalar(null);
+}));
+$("irPestana").addEventListener("click", () => { setShow(pendiente); senalar(null); });
 document.addEventListener("keydown", e => {
   if (e.target.tagName === "INPUT") return;
   if (e.key === "ArrowRight") go(step + 1);
