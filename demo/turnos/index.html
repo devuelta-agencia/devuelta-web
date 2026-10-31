@@ -166,6 +166,27 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 }
 @keyframes latir { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) { .phone.con-novedad h2::after { animation: none; } }
+/* Guía: una sola cosa brilla a la vez y es lo que hay que tocar ahora. */
+.avance { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; margin-right: 4px; }
+.barra { height: 6px; max-width: 220px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.barra i { display: block; height: 100%; width: 0; border-radius: 3px; background: var(--accent); transition: width .3s ease-out; }
+.btn.te-toca, .replies button:not(:disabled) { animation: anillo 1.6s ease-out infinite; }
+@keyframes anillo { 0% { box-shadow: 0 0 0 0 rgba(20, 150, 135, .6); } 70%, 100% { box-shadow: 0 0 0 10px rgba(20, 150, 135, 0); } }
+.stage { position: relative; }
+.premio { position: absolute; z-index: 2; bottom: 10px; left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 24px); margin: 0; padding: 8px 14px; border-radius: 12px; font-size: 14px; font-weight: 600; text-align: center; color: var(--on-accent); background: var(--accent); box-shadow: 0 4px 14px rgba(0, 0, 0, .25); pointer-events: none; animation: rise .25s ease-out; }
+.logro { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px 16px; border-radius: 12px; background: var(--accent-soft); }
+.logro p { margin: 0; font-size: 17px; font-weight: 700; }
+.phone.con-novedad h2::after { content: "1"; width: 18px; height: 18px; font-size: 11px; line-height: 18px; font-weight: 700; text-align: center; color: #fff; background: #d92d20; }
+@media (max-width: 759px) {
+  .pista { color: var(--accent); background: var(--surface); border: 2px solid var(--accent); text-align: center; pointer-events: none; margin: 0; }
+  .ir-pestana { font-size: 15px; border-radius: 22px; text-align: center; }
+  .switch.who button { font-size: 15px; }
+  .switch button.pendiente { color: var(--on-accent); background: var(--accent); font-weight: 600; animation: anillo 1.6s ease-out infinite; }
+  .switch button.pendiente::after { content: "1"; width: 20px; height: 20px; font-size: 12px; line-height: 20px; font-weight: 700; text-align: center; color: #fff; background: #d92d20; }
+  .btn.espera { color: var(--muted); background: var(--surface); border-color: var(--line); }
+  .replies button { min-height: 44px; font-size: 15px; }
+}
+@media (prefers-reduced-motion: reduce) { .btn.te-toca, .replies button:not(:disabled), .switch button.pendiente { animation: none; outline: 2px solid var(--accent); outline-offset: 2px; } .premio { animation: none; } }
 </style>
 
 </head>
@@ -198,6 +219,7 @@ if (Date.now() >= new Date("2026-11-08T23:59:00-03:00").getTime()) {
   </section>
 
   <section class="panel">
+  <div class="logro" id="logro" hidden><p>🎉 ¡Recorrido completo! Ahora probá con tus números.</p></div>
   <div class="panel-head">
     <span class="tag">Todos los datos son inventados, a modo de ejemplo.</span>
   </div>
@@ -208,7 +230,7 @@ if (Date.now() >= new Date("2026-11-08T23:59:00-03:00").getTime()) {
   </section>
 
   <div class="pager">
-    <span class="count" id="count"></span>
+    <div class="avance"><span class="count" id="count"></span><div class="barra"><i id="barra"></i></div></div>
     <button type="button" class="btn" id="back">Atrás</button>
     <button type="button" class="btn main" id="next">Siguiente</button>
   </div>
@@ -228,6 +250,8 @@ if (Date.now() >= new Date("2026-11-08T23:59:00-03:00").getTime()) {
       <div class="agenda" id="agenda"></div>
     </article>
   <button type="button" class="ir-pestana" id="irPestana" hidden></button>
+    <p class="ir-pestana pista" id="pista" hidden></p>
+    <p class="premio" id="premio" role="status" hidden></p>
   </div>
 
   <div class="numbers" id="numbers" hidden>
@@ -357,7 +381,7 @@ $("avisoRegistro").hidden = !CANDIDATA;
 $("whatsapp").addEventListener("click", () => registrar("whatsapp"));
 const num = (n, d) => n.toLocaleString("es-AR", { minimumFractionDigits: 0, maximumFractionDigits: d });
 const money = n => "$" + Math.round(n).toLocaleString("es-AR");
-let step = 0, branch = "reprogramar", values = {}, bienvenida = true, pendiente = null;
+let step = 0, branch = "reprogramar", values = {}, bienvenida = true, completo = false, pendiente = null, pistaEn = null, premioPendiente = "", premioTimer;
 const movil = window.matchMedia("(max-width: 759px)");
 const steps = () => BASE_STEPS.concat(BRANCHES[branch]);
 
@@ -503,15 +527,20 @@ function renderResult() {
 function render() {
   const all = steps(), last = all.length, atNumbers = step === last;
   document.documentElement.dataset.pantalla = bienvenida ? "bienvenida" : atNumbers ? "numeros" : "chat";
+  pistaEn = null;
+  senalar(null);
   $("intro").hidden = step !== 0;
   $("toChat").hidden = !atNumbers;
-  $("count").textContent = (step + 1) + " de " + (last + 1);
+  $("count").textContent = "Paso " + (step + 1) + " de " + (last + 1);
+  $("barra").style.width = ((step + 1) / (last + 1) * 100) + "%";
   $("back").disabled = step === 0 && !movil.matches;
   $("next").textContent = atNumbers ? "Empezar de nuevo" : "Siguiente";
   $("stage").hidden = atNumbers;
   $("who").hidden = atNumbers;
   $("numbers").hidden = !atNumbers;
+  $("logro").hidden = !(atNumbers && completo);
   if (atNumbers) {
+    tocaSiguiente();
     $("when").textContent = "Tus números";
     $("say").textContent = "Esto es lo que hoy te cuesta gestionar los turnos, contado con tus datos.";
     renderNumbers();
@@ -523,26 +552,60 @@ function render() {
   renderAgenda();
   const cur = all[step], previo = all[step - 1];
   // Solo señala lo que de verdad es nuevo: un mensaje que no escribió Carla o un aviso que recién llega.
-  if (cur.show === "b" && (cur.chat || []).some(m => !m.me)) senalar("a", "Mirá lo que le llegó a Carla");
-  else if (cur.show === "a" && cur.notice && !cur.notice.done && !(previo && previo.notice)) senalar("b", "Mirá el aviso que te llegó");
+  if (cur.show === "b" && (cur.chat || []).some(m => !m.me)) senalar("a", "lo que le llegó a Carla", "¡Eso es! Así lo ve Carla.");
+  else if (cur.show === "a" && cur.notice && !cur.notice.done && !(previo && previo.notice)) senalar("b", "el aviso que te llegó", "¡Eso es! Así te llega el aviso a vos.");
   else senalar(null);
+  if ((cur.chat || []).some(m => m.replies)) pedirRespuesta(cur.show, "Tocá uno de los botones del mensaje");
   setShow(cur.show);
 }
 
-function senalar(destino, texto) {
+function marcarPanel(clave, texto) {
+  [["a", $("panelA")], ["b", $("panelB")]].forEach(([k, panel]) => {
+    panel.classList.toggle("con-novedad", clave === k);
+    panel.querySelector(".novedad").textContent = clave === k ? texto : "";
+  });
+}
+
+// Siguiente brilla solo cuando no hay otra cosa para tocar. No se bloquea, para que nadie sienta que se trabó.
+function tocaSiguiente() {
+  const mision = pendiente || pistaEn;
+  $("next").classList.toggle("espera", !!mision);
+  $("next").classList.toggle("te-toca", !mision && !$("stage").hidden);
+}
+
+function senalar(destino, texto, premio) {
   pendiente = destino;
-  $("irPestana").textContent = destino ? texto + " →" : "";
+  premioPendiente = premio || "";
+  $("irPestana").textContent = destino ? "👆 Tocá acá para ver " + texto : "";
   $("irPestana").hidden = !destino;
   $("stage").classList.toggle("con-aviso", !!destino);
   $("showA").classList.toggle("pendiente", destino === "a");
   $("showB").classList.toggle("pendiente", destino === "b");
-  [["a", $("panelA")], ["b", $("panelB")]].forEach(([clave, panel]) => {
-    panel.classList.toggle("con-novedad", destino === clave);
-    panel.querySelector(".novedad").textContent = destino === clave ? texto : "";
-  });
+  marcarPanel(destino, destino ? "Mirá " + texto : "");
+  tocaSiguiente();
+}
+
+function pedirRespuesta(clave, texto) {
+  pistaEn = clave;
+  $("pista").textContent = "👆 " + texto;
+  $("stage").classList.add("con-aviso");
+  marcarPanel(clave, texto);
+  tocaSiguiente();
+}
+
+// Premia el descubrimiento con un mensaje corto y devuelve el brillo a Siguiente.
+function visto(clave) {
+  const premio = premioPendiente;
+  setShow(clave);
+  senalar(null);
+  clearTimeout(premioTimer);
+  $("premio").textContent = premio;
+  $("premio").hidden = !premio;
+  premioTimer = setTimeout(() => { $("premio").hidden = true; }, 2800);
 }
 
 function setShow(which) {
+  $("pista").hidden = pistaEn !== which;
   $("stage").dataset.show = which;
   $("showA").setAttribute("aria-pressed", which === "a");
   $("showB").setAttribute("aria-pressed", which === "b");
@@ -555,6 +618,7 @@ function setShow(which) {
 
 function go(n) {
   bienvenida = false;
+  if (n === steps().length && step === n - 1) completo = true;
   if (n > steps().length) { step = 0; branch = "reprogramar"; }
   else step = Math.max(0, n);
   render();
@@ -577,14 +641,13 @@ $("back").addEventListener("click", () => { if (step === 0) { bienvenida = true;
 $("empezar").addEventListener("click", () => go(0));
 movil.addEventListener("change", render);
 [$("showA"), $("showB")].forEach(b => b.addEventListener("click", () => {
-  setShow(b.dataset.show);
-  if (b.dataset.show === pendiente) senalar(null);
+  if (b.dataset.show === pendiente) visto(pendiente);
+  else setShow(b.dataset.show);
 }));
-$("irPestana").addEventListener("click", () => { setShow(pendiente); senalar(null); });
+$("irPestana").addEventListener("click", () => visto(pendiente));
 [["a", $("panelA")], ["b", $("panelB")]].forEach(([clave, panel]) => panel.addEventListener("click", e => {
   if (clave !== pendiente || e.target.closest("button")) return;
-  setShow(clave);
-  senalar(null);
+  visto(clave);
 }));
 document.addEventListener("keydown", e => {
   if (e.target.tagName === "INPUT") return;

@@ -153,6 +153,27 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 }
 @keyframes latir { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) { .phone.con-novedad h2::after { animation: none; } }
+/* Guía: una sola cosa brilla a la vez y es lo que hay que tocar ahora. */
+.avance { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; margin-right: 4px; }
+.barra { height: 6px; max-width: 220px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.barra i { display: block; height: 100%; width: 0; border-radius: 3px; background: var(--accent); transition: width .3s ease-out; }
+.btn.te-toca, .replies button:not(:disabled) { animation: anillo 1.6s ease-out infinite; }
+@keyframes anillo { 0% { box-shadow: 0 0 0 0 rgba(20, 150, 135, .6); } 70%, 100% { box-shadow: 0 0 0 10px rgba(20, 150, 135, 0); } }
+.stage { position: relative; }
+.premio { position: absolute; z-index: 2; bottom: 10px; left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 24px); margin: 0; padding: 8px 14px; border-radius: 12px; font-size: 14px; font-weight: 600; text-align: center; color: var(--on-accent); background: var(--accent); box-shadow: 0 4px 14px rgba(0, 0, 0, .25); pointer-events: none; animation: rise .25s ease-out; }
+.logro { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px 16px; border-radius: 12px; background: var(--accent-soft); }
+.logro p { margin: 0; font-size: 17px; font-weight: 700; }
+.phone.con-novedad h2::after { content: "1"; width: 18px; height: 18px; font-size: 11px; line-height: 18px; font-weight: 700; text-align: center; color: #fff; background: #d92d20; }
+@media (max-width: 759px) {
+  .pista { color: var(--accent); background: var(--surface); border: 2px solid var(--accent); text-align: center; pointer-events: none; margin: 0; }
+  .ir-pestana { font-size: 15px; border-radius: 22px; text-align: center; }
+  .switch.who button { font-size: 15px; }
+  .switch button.pendiente { color: var(--on-accent); background: var(--accent); font-weight: 600; animation: anillo 1.6s ease-out infinite; }
+  .switch button.pendiente::after { content: "1"; width: 20px; height: 20px; font-size: 12px; line-height: 20px; font-weight: 700; text-align: center; color: #fff; background: #d92d20; }
+  .btn.espera { color: var(--muted); background: var(--surface); border-color: var(--line); }
+  .replies button { min-height: 44px; font-size: 15px; }
+}
+@media (prefers-reduced-motion: reduce) { .btn.te-toca, .replies button:not(:disabled), .switch button.pendiente { animation: none; outline: 2px solid var(--accent); outline-offset: 2px; } .premio { animation: none; } }
 </style>
 
 </head>
@@ -185,6 +206,10 @@ if (Date.now() >= new Date("2026-11-08T23:59:00-03:00").getTime()) {
   </section>
 
   <section class="panel">
+  <div class="logro" id="logro" hidden>
+    <p id="logroTexto"></p>
+    <button type="button" class="btn main" id="otraHistoria"></button>
+  </div>
   <div class="panel-head">
     <div class="switch" role="group" aria-label="Historia">
       <button type="button" id="storyA" data-story="alquileres">Alquileres</button>
@@ -200,7 +225,7 @@ if (Date.now() >= new Date("2026-11-08T23:59:00-03:00").getTime()) {
   </section>
 
   <div class="pager">
-    <span class="count" id="count"></span>
+    <div class="avance"><span class="count" id="count"></span><div class="barra"><i id="barra"></i></div></div>
     <button type="button" class="btn" id="back">Atrás</button>
     <button type="button" class="btn main" id="next">Siguiente</button>
   </div>
@@ -220,6 +245,8 @@ if (Date.now() >= new Date("2026-11-08T23:59:00-03:00").getTime()) {
       <div class="chat" id="chatB"></div>
     </article>
   <button type="button" class="ir-pestana" id="irPestana" hidden></button>
+    <p class="ir-pestana pista" id="pista" hidden></p>
+    <p class="premio" id="premio" role="status" hidden></p>
   </div>
 
   <div class="numbers" id="numbers" hidden>
@@ -344,7 +371,7 @@ $("avisoRegistro").hidden = !CANDIDATA;
 $("whatsapp").addEventListener("click", () => registrar("whatsapp"));
 const num = (n, d) => n.toLocaleString("es-AR", { minimumFractionDigits: 0, maximumFractionDigits: d });
 const money = n => "$" + Math.round(n).toLocaleString("es-AR");
-let story = "alquileres", step = 0, show = "b", values = {}, bienvenida = true, pendiente = null;
+let story = "alquileres", step = 0, show = "b", values = {}, bienvenida = true, completas = new Set(), pendiente = null, pistaEn = null, premioPendiente = "", premioTimer;
 const movil = window.matchMedia("(max-width: 759px)");
 
 // Muestra desde el primer mensaje nuevo, así un mensaje largo no queda cortado por arriba.
@@ -433,6 +460,8 @@ function renderResult() {
 function render() {
   const s = STORIES[story], last = s.steps.length, atNumbers = step === last;
   document.documentElement.dataset.pantalla = bienvenida ? "bienvenida" : atNumbers ? "numeros" : "chat";
+  pistaEn = null;
+  senalar(null);
   $("intro").hidden = step !== 0;
   $("toChat").hidden = !atNumbers;
   // En el celular la aclaración larga va solo en el primer paso, que no tiene mensajes y le sobra lugar.
@@ -440,13 +469,20 @@ function render() {
   $("storyNote").textContent = s.note || "";
   $("storyA").setAttribute("aria-pressed", story === "alquileres");
   $("storyB").setAttribute("aria-pressed", story === "consultas");
-  $("count").textContent = (step + 1) + " de " + (last + 1);
+  $("count").textContent = "Paso " + (step + 1) + " de " + (last + 1);
+  $("barra").style.width = ((step + 1) / (last + 1) * 100) + "%";
   $("back").disabled = step === 0 && !movil.matches;
   $("next").textContent = atNumbers ? "Empezar de nuevo" : "Siguiente";
   $("stage").hidden = atNumbers;
   $("numbers").hidden = !atNumbers;
   document.querySelector(".who").hidden = atNumbers;
+  $("logro").hidden = !(atNumbers && completas.has(story));
   if (atNumbers) {
+    const otra = story === "alquileres" ? "consultas" : "alquileres";
+    $("logroTexto").textContent = completas.size === 2 ? "🎉 ¡Viste las dos historias! Ahora probá con tus números." : "🎉 ¡Historia completa!";
+    $("otraHistoria").hidden = completas.has(otra);
+    $("otraHistoria").textContent = "Seguí con la otra historia: " + (otra === "consultas" ? "Consultas" : "Alquileres") + " →";
+    tocaSiguiente();
     $("when").textContent = "Tus números";
     $("say").textContent = "Esto es lo que hoy te lleva, contado con tus datos.";
     renderNumbers();
@@ -462,26 +498,60 @@ function render() {
   renderChat($("chatB"), "b");
   // Solo señala lo que de verdad es nuevo: un mensaje que no escribió quien mira ese teléfono.
   const nuevo = key => (cur[key] || []).some(m => !m.me);
-  if (cur.show === "b" && nuevo("a")) senalar("a", "Mirá lo que le llegó a " + s.name);
-  else if (cur.show === "a" && nuevo("b")) senalar("b", "Mirá lo que te llegó a vos");
+  if (cur.show === "b" && nuevo("a")) senalar("a", "lo que le llegó a " + s.name, "¡Eso es! Así lo ve " + s.name + ".");
+  else if (cur.show === "a" && nuevo("b")) senalar("b", "lo que te llegó a vos", "¡Eso es! Esto es lo único que te llega a vos.");
   else senalar(null);
+  if ((cur[cur.show] || []).some(m => m.replies)) pedirRespuesta(cur.show, "Tocá el botón del mensaje");
   setShow(cur.show);
 }
 
-function senalar(destino, texto) {
+function marcarPanel(clave, texto) {
+  [["a", $("phoneA")], ["b", $("phoneB")]].forEach(([k, panel]) => {
+    panel.classList.toggle("con-novedad", clave === k);
+    panel.querySelector(".novedad").textContent = clave === k ? texto : "";
+  });
+}
+
+// Siguiente brilla solo cuando no hay otra cosa para tocar. No se bloquea, para que nadie sienta que se trabó.
+function tocaSiguiente() {
+  const mision = pendiente || pistaEn;
+  $("next").classList.toggle("espera", !!mision);
+  $("next").classList.toggle("te-toca", !mision && !$("stage").hidden);
+}
+
+function senalar(destino, texto, premio) {
   pendiente = destino;
-  $("irPestana").textContent = destino ? texto + " →" : "";
+  premioPendiente = premio || "";
+  $("irPestana").textContent = destino ? "👆 Tocá acá para ver " + texto : "";
   $("irPestana").hidden = !destino;
   $("stage").classList.toggle("con-aviso", !!destino);
   $("showA").classList.toggle("pendiente", destino === "a");
   $("showB").classList.toggle("pendiente", destino === "b");
-  [["a", $("phoneA")], ["b", $("phoneB")]].forEach(([clave, panel]) => {
-    panel.classList.toggle("con-novedad", destino === clave);
-    panel.querySelector(".novedad").textContent = destino === clave ? texto : "";
-  });
+  marcarPanel(destino, destino ? "Mirá " + texto : "");
+  tocaSiguiente();
+}
+
+function pedirRespuesta(clave, texto) {
+  pistaEn = clave;
+  $("pista").textContent = "👆 " + texto;
+  $("stage").classList.add("con-aviso");
+  marcarPanel(clave, texto);
+  tocaSiguiente();
+}
+
+// Premia el descubrimiento con un mensaje corto y devuelve el brillo a Siguiente.
+function visto(clave) {
+  const premio = premioPendiente;
+  setShow(clave);
+  senalar(null);
+  clearTimeout(premioTimer);
+  $("premio").textContent = premio;
+  $("premio").hidden = !premio;
+  premioTimer = setTimeout(() => { $("premio").hidden = true; }, 2800);
 }
 
 function setShow(which) {
+  $("pista").hidden = pistaEn !== which;
   show = which;
   $("stage").dataset.show = which;
   $("showA").setAttribute("aria-pressed", which === "a");
@@ -494,6 +564,7 @@ function setShow(which) {
 function go(n) {
   bienvenida = false;
   const last = STORIES[story].steps.length;
+  if (n === last && step === last - 1) completas.add(story);
   step = n > last ? 0 : Math.max(0, n);
   render();
   registrar(step === last ? "calculadora" : "paso", step + 1, story);
@@ -509,20 +580,20 @@ function fromHash() {
 
 $("toCalc").addEventListener("click", () => go(STORIES[story].steps.length));
 $("toChat").addEventListener("click", () => go(0));
+$("otraHistoria").addEventListener("click", () => { story = story === "alquileres" ? "consultas" : "alquileres"; values = {}; go(0); });
 $("next").addEventListener("click", () => go(step + 1));
 $("back").addEventListener("click", () => { if (step === 0) { bienvenida = true; render(); } else go(step - 1); });
 $("empezar").addEventListener("click", () => go(0));
 movil.addEventListener("change", render);
 [$("storyA"), $("storyB")].forEach(b => b.addEventListener("click", () => { story = b.dataset.story; values = {}; go(0); }));
 [$("showA"), $("showB")].forEach(b => b.addEventListener("click", () => {
-  setShow(b.dataset.show);
-  if (b.dataset.show === pendiente) senalar(null);
+  if (b.dataset.show === pendiente) visto(pendiente);
+  else setShow(b.dataset.show);
 }));
-$("irPestana").addEventListener("click", () => { setShow(pendiente); senalar(null); });
+$("irPestana").addEventListener("click", () => visto(pendiente));
 [["a", $("phoneA")], ["b", $("phoneB")]].forEach(([clave, panel]) => panel.addEventListener("click", e => {
   if (clave !== pendiente || e.target.closest("button")) return;
-  setShow(clave);
-  senalar(null);
+  visto(clave);
 }));
 document.addEventListener("keydown", e => {
   if (e.target.tagName === "INPUT") return;
