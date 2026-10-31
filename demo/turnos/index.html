@@ -364,11 +364,13 @@ const WHATSAPP_MENSAJE = "¡Hola Sol! Me encantó la demo de turnos, ¿nos vemos
 const $ = id => document.getElementById(id);
 $("whatsapp").href = "https://wa.me/" + WHATSAPP_NUMERO + "?text=" + encodeURIComponent(WHATSAPP_MENSAJE);
 
-// Solo registra si el enlace trae un código de candidata (?c=). Nunca envía los números de la calculadora.
+// En devuelta.com.ar la dirección limpia cuenta como la candidata; ?c=amigos separa las visitas de amigos y conocidos.
+// Nunca envía los números de la calculadora.
 const CANDIDATA = (() => {
   try {
     const c = new URLSearchParams(location.search).get("c");
-    return /^[a-z0-9]{1,8}$/.test(c || "") ? c : null;
+    if (c === null) return /(^|\.)devuelta\.com\.ar$/.test(location.hostname) ? "c1" : null;
+    return /^[a-z0-9]{1,8}$/.test(c) ? c : null;
   } catch (e) { return null; }
 })();
 let calculadoraUsada = false;
