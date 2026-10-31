@@ -143,6 +143,16 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 }
 @keyframes llamar { 0%, 100% { transform: translateX(-50%); } 50% { transform: translateX(-50%) translateY(-3px); } }
 @media (prefers-reduced-motion: reduce) { .ir-pestana { animation: none; } }
+.novedad { display: none; }
+/* Desktop: se ven las dos pantallas, así que se resalta la que tiene algo nuevo y la frase reemplaza a su subtítulo. */
+@media (min-width: 760px) {
+  .phone.con-novedad { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); cursor: pointer; }
+  .phone.con-novedad header span { display: none; }
+  .phone.con-novedad .novedad { display: block; font-size: 12px; font-weight: 600; line-height: 18px; color: var(--accent); }
+  .phone.con-novedad h2::after { content: ""; display: inline-block; width: 8px; height: 8px; margin-left: 6px; border-radius: 50%; background: var(--accent); vertical-align: middle; animation: latir 1.6s ease-in-out infinite; }
+}
+@keyframes latir { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .phone.con-novedad h2::after { animation: none; } }
 </style>
 
 </head>
@@ -202,11 +212,11 @@ if (Date.now() >= new Date("2026-11-08T23:59:00-03:00").getTime()) {
 
   <div class="stage" id="stage">
     <article class="phone" id="phoneA">
-      <header><h2 id="nameA"></h2><span id="subA"></span></header>
+      <header><h2 id="nameA"></h2><span id="subA"></span><strong class="novedad"></strong></header>
       <div class="chat" id="chatA"></div>
     </article>
     <article class="phone" id="phoneB">
-      <header><h2>Tu WhatsApp</h2><span>Lo único que ves vos</span></header>
+      <header><h2>Tu WhatsApp</h2><span>Lo único que ves vos</span><strong class="novedad"></strong></header>
       <div class="chat" id="chatB"></div>
     </article>
   <button type="button" class="ir-pestana" id="irPestana" hidden></button>
@@ -452,19 +462,23 @@ function render() {
   renderChat($("chatB"), "b");
   // Solo señala lo que de verdad es nuevo: un mensaje que no escribió quien mira ese teléfono.
   const nuevo = key => (cur[key] || []).some(m => !m.me);
-  if (cur.show === "b" && nuevo("a")) senalar("a", "Mirá lo que le llegó a " + s.name + " →");
-  else if (cur.show === "a" && nuevo("b")) senalar("b", "Mirá lo que te llegó a vos →");
+  if (cur.show === "b" && nuevo("a")) senalar("a", "Mirá lo que le llegó a " + s.name);
+  else if (cur.show === "a" && nuevo("b")) senalar("b", "Mirá lo que te llegó a vos");
   else senalar(null);
   setShow(cur.show);
 }
 
 function senalar(destino, texto) {
   pendiente = destino;
-  $("irPestana").textContent = texto || "";
+  $("irPestana").textContent = destino ? texto + " →" : "";
   $("irPestana").hidden = !destino;
   $("stage").classList.toggle("con-aviso", !!destino);
   $("showA").classList.toggle("pendiente", destino === "a");
   $("showB").classList.toggle("pendiente", destino === "b");
+  [["a", $("phoneA")], ["b", $("phoneB")]].forEach(([clave, panel]) => {
+    panel.classList.toggle("con-novedad", destino === clave);
+    panel.querySelector(".novedad").textContent = destino === clave ? texto : "";
+  });
 }
 
 function setShow(which) {
@@ -505,6 +519,11 @@ movil.addEventListener("change", render);
   if (b.dataset.show === pendiente) senalar(null);
 }));
 $("irPestana").addEventListener("click", () => { setShow(pendiente); senalar(null); });
+[["a", $("phoneA")], ["b", $("phoneB")]].forEach(([clave, panel]) => panel.addEventListener("click", e => {
+  if (clave !== pendiente || e.target.closest("button")) return;
+  setShow(clave);
+  senalar(null);
+}));
 document.addEventListener("keydown", e => {
   if (e.target.tagName === "INPUT") return;
   if (e.key === "ArrowRight") go(step + 1);
