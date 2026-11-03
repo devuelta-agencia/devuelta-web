@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test · ¿Cuánto te cuesta lo repetitivo? · Devuelta</title>
+  <meta name="description" content="Respondé 6 preguntas y mirá cuántas horas y cuánta plata se te van por mes en mensajes y tareas repetitivas. No guardamos nada de lo que cargás.">
+  <link rel="stylesheet" href="../styles.css?v=8">
+  <style>
+    .test { max-width: 640px; margin: 0 auto; padding: 48px 20px 72px; }
+    .test h1 { font-size: clamp(28px, 4.5vw, 40px); line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 14px; }
+    .test .intro { color: var(--suave); font-size: 18px; margin: 0 0 28px; }
+    .progreso { height: 6px; background: var(--borde); border-radius: 999px; overflow: hidden; margin-bottom: 28px; }
+    .progreso span { display: block; height: 100%; width: 0; background: var(--acento); transition: width .25s; }
+    .paso-num { color: var(--suave); font-size: 14px; margin: 0 0 6px; }
+    .pregunta h2 { font-size: 24px; line-height: 1.25; margin: 0 0 8px; }
+    .pregunta .ayuda { color: var(--suave); margin: 0 0 20px; font-size: 16px; }
+    .opciones { display: grid; gap: 10px; }
+    .opcion {
+      text-align: left; font: inherit; color: var(--texto); background: #fff;
+      border: 1px solid var(--borde); border-radius: 10px; padding: 14px 16px; cursor: pointer;
+    }
+    .opcion:hover, .opcion:focus-visible { border-color: var(--acento); outline: none; }
+    .campo { display: flex; gap: 10px; flex-wrap: wrap; }
+    .campo input {
+      flex: 1 1 200px; font: inherit; padding: 13px 14px; border: 1px solid var(--borde);
+      border-radius: 8px; background: #fff; color: var(--texto);
+    }
+    .campo input:focus { border-color: var(--acento); outline: none; }
+    .boton[disabled] { opacity: .5; cursor: default; }
+    button.boton { border: 0; font: inherit; font-weight: 600; cursor: pointer; }
+    .volver { background: none; border: 0; color: var(--suave); font: inherit; font-size: 15px; padding: 0; margin-top: 22px; cursor: pointer; text-decoration: underline; }
+    .resultado .cifra { font-size: clamp(34px, 6vw, 48px); font-weight: 700; color: var(--acento); line-height: 1.1; margin: 0; }
+    .resultado .tarjeta { margin-bottom: 14px; }
+    .resultado .tarjeta p { margin: 6px 0 0; }
+    .aviso { color: var(--suave); font-size: 14px; margin-top: 20px; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="contenedor">
+      <a class="marca" href="../index.html">devuelta<span>.</span></a>
+    </div>
+  </header>
+
+  <main class="test">
+    <section id="inicio" style="padding:0">
+      <span class="etiqueta">Test · menos de 2 minutos</span>
+      <h1>¿Cuánto te cuesta lo repetitivo?</h1>
+      <p class="intro">Respondé 6 preguntas sobre tu semana y mirá cuántas horas y cuánta plata se te van por mes en mensajes y tareas que se repiten. No guardamos nada de lo que cargás.</p>
+      <button class="boton" id="empezar" type="button">Empezar el test</button>
+    </section>
+
+    <section id="preguntas" style="padding:0" hidden>
+      <div class="progreso" aria-hidden="true"><span id="barra"></span></div>
+      <p class="paso-num" id="pasoNum"></p>
+      <div class="pregunta" id="pregunta"></div>
+      <button class="volver" id="volver" type="button">Volver a la pregunta anterior</button>
+    </section>
+
+    <section id="resultado" class="resultado" style="padding:0" hidden>
+      <span class="etiqueta">Tu resultado</span>
+      <h1 id="resTitulo"></h1>
+      <div class="tarjeta">
+        <p class="cifra" id="resHoras"></p>
+        <p id="resHorasTexto"></p>
+      </div>
+      <div class="tarjeta" id="tarjetaPlata">
+        <p class="cifra" id="resPlata"></p>
+        <p id="resPlataTexto"></p>
+      </div>
+      <p class="bajada" id="resCierre"></p>
+      <p><a class="boton" id="resWhatsapp" target="_blank" rel="noopener">Contanos tu resultado por WhatsApp</a></p>
+      <p class="aviso">Es una estimación hecha con tus respuestas, no una promesa de ahorro. La cuenta se hace en tu teléfono o computadora: no guardamos ni enviamos nada de lo que cargaste. Si nos escribís, solo nos llega lo que vos mandes.</p>
+      <button class="volver" id="repetir" type="button">Hacer el test de nuevo</button>
+    </section>
+  </main>
+
+  <footer>
+    <div class="contenedor">
+      <p>© 2026 Devuelta. Todos los derechos reservados.</p>
+      <p><a href="../index.html">Volver al sitio</a> · <a href="../privacidad.html">Política de privacidad</a></p>
+    </div>
+  </footer>
+
+<script>
+// Número de WhatsApp de Sol (el mismo de las demos)
+const WHATSAPP_NUMERO = "5492213147922";
+const SEMANAS_POR_MES = 4.3;
+
+// Cada pregunta: opciones con un valor para la cuenta, o un campo numérico
+const PREGUNTAS = [
+  { id: "rubro", titulo: "¿A qué se dedica tu negocio?",
+    opciones: [
+      { t: "Salud: consultorio, clínica, kinesiología", v: "salud" },
+      { t: "Estética y bienestar: centro de estética, masajes, peluquería", v: "estética y bienestar" },
+      { t: "Inmobiliaria", v: "inmobiliaria" },
+      { t: "Estudio profesional: contable, jurídico u otro", v: "estudio profesional" },
+      { t: "Otro tipo de negocio", v: "otro rubro" } ] },
+  { id: "conversaciones", titulo: "¿Cuántas conversaciones con clientes tenés por día?",
+    ayuda: "Por WhatsApp, teléfono o redes: turnos, consultas, cambios, preguntas.",
+    opciones: [
+      { t: "Menos de 10", v: 6 }, { t: "Entre 10 y 25", v: 17 },
+      { t: "Entre 25 y 50", v: 37 }, { t: "Más de 50", v: 60 } ] },
+  { id: "minutos", titulo: "¿Cuánto tiempo te lleva cada una, en promedio?",
+    ayuda: "Sumá todo el ida y vuelta: leer, buscar en la agenda, responder, confirmar.",
+    opciones: [
+      { t: "1 o 2 minutos", v: 1.5 }, { t: "Entre 3 y 5 minutos", v: 4 },
+      { t: "Entre 5 y 10 minutos", v: 7.5 }, { t: "Más de 10 minutos", v: 12 } ] },
+  { id: "dias", titulo: "¿Cuántos días por semana respondés mensajes de trabajo?",
+    ayuda: "Contá también los que no atendés, pero igual contestás.",
+    opciones: [
+      { t: "5 días", v: 5 }, { t: "6 días", v: 6 }, { t: "Los 7 días", v: 7 } ] },
+  { id: "perdidos", titulo: "¿Cuántos turnos, ventas o clientes se te caen por semana?",
+    ayuda: "Por responder tarde, por olvidos o porque nadie confirmó. Una estimación sirve.",
+    opciones: [
+      { t: "Ninguno", v: 0 }, { t: "1 o 2", v: 1.5 },
+      { t: "Entre 3 y 5", v: 4 }, { t: "Más de 5", v: 7 } ] },
+  { id: "valor", titulo: "¿Cuánto vale, en promedio, un turno o una venta?",
+    ayuda: "En pesos. Si no tenés el número exacto, poné uno aproximado.",
+    campo: { placeholder: "Por ejemplo, 25000" } }
+];
+
+const $ = (id) => document.getElementById(id);
+let paso = 0;
+let respuestas = {};
+
+function mostrar(seccion) {
+  ["inicio", "preguntas", "resultado"].forEach((s) => { $(s).hidden = s !== seccion; });
+  window.scrollTo(0, 0);
+}
+
+function pintarPregunta() {
+  const p = PREGUNTAS[paso];
+  $("barra").style.width = (paso / PREGUNTAS.length) * 100 + "%";
+  $("pasoNum").textContent = "Pregunta " + (paso + 1) + " de " + PREGUNTAS.length;
+  $("volver").hidden = paso === 0;
+  const cont = $("pregunta");
+  cont.innerHTML = "";
+  const h = document.createElement("h2");
+  h.textContent = p.titulo;
+  cont.appendChild(h);
+  if (p.ayuda) {
+    const a = document.createElement("p");
+    a.className = "ayuda";
+    a.textContent = p.ayuda;
+    cont.appendChild(a);
+  }
+  if (p.opciones) {
+    const lista = document.createElement("div");
+    lista.className = "opciones";
+    p.opciones.forEach((o) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "opcion";
+      b.textContent = o.t;
+      b.addEventListener("click", () => responder(p.id, o.v));
+      lista.appendChild(b);
+    });
+    cont.appendChild(lista);
+  } else {
+    const form = document.createElement("form");
+    form.className = "campo";
+    const input = document.createElement("input");
+    input.type = "text";
+    input.inputMode = "numeric";
+    input.placeholder = p.campo.placeholder;
+    input.setAttribute("aria-label", p.titulo);
+    if (respuestas[p.id]) input.value = respuestas[p.id];
+    const b = document.createElement("button");
+    b.type = "submit";
+    b.className = "boton";
+    b.textContent = "Ver mi resultado";
+    const leer = () => Number(input.value.replace(/\D/g, ""));
+    b.disabled = !(leer() > 0);
+    input.addEventListener("input", () => { b.disabled = !(leer() > 0); });
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (leer() > 0) responder(p.id, leer());
+    });
+    form.appendChild(input);
+    form.appendChild(b);
+    cont.appendChild(form);
+    input.focus();
+  }
+}
+
+function responder(id, valor) {
+  respuestas[id] = valor;
+  paso++;
+  if (paso < PREGUNTAS.length) pintarPregunta();
+  else pintarResultado();
+}
+
+const pesos = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 });
+const redondear = (n, a) => Math.round(n / a) * a;
+
+function pintarResultado() {
+  const r = respuestas;
+  const horasMes = Math.round((r.conversaciones * r.minutos * r.dias * SEMANAS_POR_MES) / 60);
+  const jornadas = Math.round(horasMes / 8);
+  const plataMes = redondear(r.perdidos * r.valor * SEMANAS_POR_MES, 1000);
+
+  $("resTitulo").textContent = horasMes >= 20
+    ? "Lo repetitivo se está llevando una parte grande de tu mes."
+    : "Lo repetitivo ya te está sacando tiempo.";
+  $("resHoras").textContent = "≈ " + horasMes + " horas por mes";
+  $("resHorasTexto").textContent = jornadas >= 1
+    ? "respondiendo mensajes y coordinando. Son unas " + jornadas + (jornadas === 1 ? " jornada" : " jornadas") + " de trabajo de 8 horas que no van a lo que elegiste hacer."
+    : "respondiendo mensajes y coordinando. Es tiempo que no va a lo que elegiste hacer.";
+
+  if (plataMes > 0) {
+    $("tarjetaPlata").hidden = false;
+    $("resPlata").textContent = "≈ " + pesos.format(plataMes) + " por mes";
+    $("resPlataTexto").textContent = "en turnos, ventas o clientes que se caen. Es plata que se queda sobre la mesa.";
+  } else {
+    $("tarjetaPlata").hidden = true;
+  }
+
+  $("resCierre").textContent = "No todo eso se puede delegar, pero una parte sí. Contanos tu resultado y vemos juntos qué se puede sacarte de encima primero.";
+
+  let msg = "¡Hola! Hice el test de Devuelta. Mi negocio es de " + r.rubro + " y me dio unas " + horasMes + " horas por mes en mensajes";
+  msg += plataMes > 0 ? " y unos " + pesos.format(plataMes) + " por mes en clientes que se caen." : ".";
+  msg += " Quiero ver cómo bajarlo.";
+  $("resWhatsapp").href = "https://wa.me/" + WHATSAPP_NUMERO + "?text=" + encodeURIComponent(msg);
+
+  $("barra").style.width = "100%";
+  mostrar("resultado");
+}
+
+$("empezar").addEventListener("click", () => { paso = 0; respuestas = {}; mostrar("preguntas"); pintarPregunta(); });
+$("volver").addEventListener("click", () => { if (paso > 0) { paso--; pintarPregunta(); } });
+$("repetir").addEventListener("click", () => { paso = 0; respuestas = {}; mostrar("preguntas"); pintarPregunta(); });
+</script>
+</body>
+</html>

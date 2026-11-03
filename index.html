@@ -3,17 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Devuelta · Automatizaciones e IA para pymes</title>
-  <meta name="description" content="Devuelta diseña e implementa automatizaciones y soluciones con inteligencia artificial para pymes y profesionales en Argentina.">
-  <link rel="stylesheet" href="styles.css?v=2">
+  <title>Devuelta · Que tu negocio no dependa de tu memoria y del WhatsApp</title>
+  <meta name="description" content="Para profesionales que trabajan con turnos: un asistente responde por WhatsApp, da, cambia y cancela turnos y los anota en tu calendario de Google. Sin instalar nada.">
+  <link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body>
   <header>
     <div class="contenedor">
       <a class="marca" href="index.html">devuelta<span>.</span></a>
       <nav>
-        <a href="#soluciones">Soluciones</a>
-        <a href="#como-trabajamos">Cómo trabajamos</a>
+        <a href="#como-funciona">Cómo funciona</a>
+        <a href="#como-empezamos">Cómo empezamos</a>
+        <a href="#quien">Quién está detrás</a>
         <a href="#contacto">Contacto</a>
       </nav>
     </div>
@@ -21,53 +22,133 @@
 
   <main>
     <div class="contenedor hero">
-      <h1>Automatizaciones con IA para que tu negocio responda solo, y bien.</h1>
-      <p>Diseñamos e implementamos soluciones a medida para pymes y profesionales de Argentina: menos tareas repetitivas, más tiempo para tus clientes.</p>
-      <a class="boton" href="#contacto">Hablemos</a>
+      <span class="etiqueta">De vuelta a lo que te apasiona</span>
+      <h1>Tu negocio no tiene por qué depender de tu memoria y del WhatsApp.</h1>
+      <p>Para profesionales que trabajan con turnos: un asistente responde por WhatsApp a cualquier hora, da, cambia y cancela turnos y los anota en tu calendario. Vos te sacás eso de encima y volvés a lo que te gusta.</p>
+      <a class="boton" href="https://wa.me/5492213147922?text=%C2%A1Hola%20Sol%21%20Vi%20la%20web%20de%20Devuelta%20y%20quiero%20un%20asistente%20para%20mis%20turnos.%20Te%20cuento%20c%C3%B3mo%20trabajo%20hoy%3A" target="_blank" rel="noopener">Quiero un asistente para mis turnos</a>
+      <p class="hero-secundario">o <a href="test/index.html">calculá cuánto te cuesta hoy</a>, en 2 minutos</p>
     </div>
 
-    <section id="soluciones">
+    <section id="para-vos">
       <div class="contenedor">
-        <h2>Soluciones</h2>
+        <h2>Esto es para vos si…</h2>
+        <ol class="pasos checklist">
+          <li>Contestás WhatsApp entre un cliente y otro, y a veces mientras atendés.</li>
+          <li>Llevás la agenda a memoria: quién confirmó, quién canceló, quién quedó en avisar.</li>
+          <li>Tu jornada nunca termina: cuando cerrás, el teléfono sigue lleno de mensajes por responder.</li>
+          <li>Algún cliente ya te hizo saber que tardaste en responder. Y sospechás que otros no te lo dijeron: directamente no volvieron.</li>
+          <li>Pensaste en contratar a alguien para que conteste los mensajes, pero te frena: es un gasto fijo, hay que entrenarlo y no sabés si lo va a hacer bien.</li>
+        </ol>
+        <p class="bajada cierre">Si te reconociste en dos o más, no es falta de esfuerzo. El problema no es la cantidad de trabajo: es la carga operativa que viene con él. Y tiene solución.</p>
+      </div>
+    </section>
+
+    <section id="problema">
+      <div class="contenedor">
+        <h2>Esa carga te cuesta dos veces</h2>
         <div class="tarjetas">
           <div class="tarjeta">
-            <span class="etiqueta">Disponible</span>
-            <h3>Turnos por WhatsApp</h3>
-            <p>Un asistente que da, cambia y cancela turnos por WhatsApp, los agenda en tu calendario y envía recordatorios. Pensado para consultorios, centros de estética y servicios.</p>
+            <h3>Te cuesta energía</h3>
+            <p>Horas en lo repetitivo y lo administrativo. Un desgaste constante que te quita fuerza para formarte, crecer o buscar nuevas oportunidades.</p>
           </div>
           <div class="tarjeta">
-            <span class="etiqueta">Próximamente</span>
-            <h3>IA para inmobiliarias</h3>
-            <p>Respuestas a consultas sobre propiedades con información real de tu cartera, y derivación a un asesor cuando hace falta.</p>
+            <h3>Te cuesta plata</h3>
+            <p>Todos tenemos un tope. Cuando no llegás, quedan mensajes en el limbo, preguntas sin responder y clientes que se van a otro lado.</p>
           </div>
-          <div class="tarjeta">
-            <span class="etiqueta">A medida</span>
-            <h3>Automatizaciones</h3>
-            <p>Conectamos las herramientas que ya usás (planillas, calendario, email, WhatsApp) para que la información fluya sin cargarla dos veces.</p>
+        </div>
+        <div class="contacto test-bloque">
+          <h2>¿Cuánto te cuesta a vos?</h2>
+          <p>Respondé 6 preguntas y mirá cuántas horas y cuánta plata se te van por mes. Menos de 2 minutos, y no guardamos nada de lo que cargás.</p>
+          <p><a class="boton" href="test/index.html">Hacer el test</a></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="como-funciona">
+      <div class="contenedor">
+        <h2>Así funciona</h2>
+        <div class="dos-columnas">
+          <div class="chat" id="chat" aria-label="Ejemplo de conversación por WhatsApp: a las 22:15 una clienta pide turno y el asistente se lo reserva para el viernes a las 19.">
+            <div class="chat-cabecera"><strong>Tu negocio</strong><span id="chatEstado">en línea</span></div>
+            <div class="msg clienta">Hola! Quiero un turno para el viernes a la tarde, puede ser?<span class="hora">22:15</span></div>
+            <div class="msg">¡Hola! 😊 El viernes a la tarde tengo libre a las 16:00 y a las 19:00. ¿Cuál te queda mejor? Decime también tu nombre y para qué es el turno.<span class="hora">22:15</span></div>
+            <div class="msg clienta">A las 7. Soy Carla, es para una limpieza facial<span class="hora">22:16</span></div>
+            <div class="msg">¡Genial, Carla! Tu turno quedó reservado:<br>📅 <strong>Viernes 20/11, 19:00</strong><br>📍 Mitre 450<br>Si necesitás cambiarlo, escribime por acá.<span class="hora">22:16</span></div>
+            <div class="chat-aviso">📅 <strong>Nuevo turno en tu calendario</strong><br>Viernes 20/11 · 19:00 · Carla · Limpieza facial</div>
+            <p class="chat-pie">Ejemplo: arriba, lo que ve tu clienta. Abajo, lo que aparece en tu calendario.</p>
+          </div>
+          <div>
+            <ol class="pasos checklist">
+              <li><strong>Da, cambia y cancela turnos</strong>, siempre dentro de tus horarios.</li>
+              <li><strong>Conversa como lo haría una persona.</strong> Con calidez, entendiendo cómo escribe la gente ("a las 7" es a las 19) y también los audios. Del otro lado, no se siente como hablar con un robot.</li>
+              <li><strong>Responde a cualquier hora</strong>, también a las 22, cuando vos ya cerraste.</li>
+              <li><strong>Anota cada turno en tu calendario de Google</strong>, para que veas tu agenda donde ya la mirás.</li>
+              <li><strong>Ni vos ni tus clientes instalan nada.</strong> Todo sigue igual, pero con un asistente que te saca el trabajo pesado de encima.</li>
+              <li><strong>Sabe cuándo pasarte la posta.</strong> Si una consulta necesita de vos, como una duda puntual sobre un tratamiento o un caso especial, no improvisa: le avisa a tu cliente que le vas a responder vos.</li>
+            </ol>
           </div>
         </div>
       </div>
     </section>
 
-    <section id="como-trabajamos">
+    <section id="como-empezamos">
       <div class="contenedor">
-        <h2>Cómo trabajamos</h2>
+        <h2>Cómo empezamos</h2>
+        <p class="bajada">Antes de armar nada, entendemos cómo das hoy los turnos. Así tu asistente trabaja como vos, y no al revés.</p>
         <ol class="pasos">
-          <li><strong>Entendemos tu proceso.</strong> Vemos cómo trabajás hoy y dónde se pierde tiempo.</li>
-          <li><strong>Lo configuramos para vos.</strong> La IA usa solo tus datos reales: horarios, precios y direcciones salen de tus sistemas, nunca inventados.</li>
-          <li><strong>Siempre hay una persona.</strong> Toda conversación automática tiene una salida clara hacia alguien de tu equipo.</li>
-          <li><strong>Te acompañamos.</strong> Ajustes, soporte y mejoras mientras la solución está en uso.</li>
+          <li><strong>Una charla de 15 minutos.</strong> Nos contás cómo es tu semana: cuántos mensajes, cómo das los turnos, qué se te escapa.</li>
+          <li><strong>Le ponemos un número.</strong> Cuánto tiempo y cuánta plata te cuesta hoy. Si la cuenta no da, no seguimos.</li>
+          <li><strong>Armamos tu asistente.</strong> Con tus servicios, tus horarios y tu dirección.</li>
+          <li><strong>Lo probás vos primero.</strong> Antes de que le escriba un solo cliente.</li>
+          <li><strong>Medimos y ajustamos.</strong> Comparamos el antes y el después, y lo mejoramos mientras está en uso.</li>
         </ol>
+      </div>
+    </section>
+
+    <section id="valores">
+      <div class="contenedor">
+        <h2>En qué creemos</h2>
+        <p class="bajada">Nuestra misión no es automatizar procesos. Es devolverte la libertad. Por eso cada cosa que hacemos pasa por estos cuatro filtros.</p>
+        <div class="tarjetas tarjetas-dos">
+          <div class="tarjeta">
+            <span class="etiqueta">Simplicidad</span>
+            <h3>Si complica, no sirve.</h3>
+            <p>Trabajamos con lo que ya usás, como WhatsApp y tu calendario. Nada nuevo que aprender, ninguna carga más.</p>
+          </div>
+          <div class="tarjeta">
+            <span class="etiqueta">Cercanía</span>
+            <h3>Tus clientes siguen teniéndote cerca.</h3>
+            <p>La tecnología cuida el vínculo con tus clientes, nunca lo reemplaza. Toda conversación automática tiene que tener una salida clara hacia una persona.</p>
+          </div>
+          <div class="tarjeta">
+            <span class="etiqueta">Libertad</span>
+            <h3>Si no te devuelve tiempo, no lo hacemos.</h3>
+            <p>Cada sistema tiene que notarse en tu día a día: más tiempo, más energía, más tranquilidad.</p>
+          </div>
+          <div class="tarjeta">
+            <span class="etiqueta">Confianza</span>
+            <h3>Prometemos solo lo que podemos cumplir.</h3>
+            <p>Si algo no compensa o todavía no está probado, te lo decimos antes de que decidas.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="quien">
+      <div class="contenedor">
+        <h2>Quién está detrás</h2>
+        <p class="bajada"><strong>Soy Sol. Detrás de Devuelta hay una persona que te va a responder.</strong></p>
+        <p class="bajada">Trabajé más de 8 años en operaciones y marketing digital, y armé Devuelta después de quemarme haciendo todo a mano. Sé lo que es que el trabajo no termine nunca.</p>
+        <p class="nota">Estoy sumando a los primeros negocios. Todavía no tengo casos para mostrarte, así que te muestro cómo funciona y medimos el resultado juntos.</p>
       </div>
     </section>
 
     <section id="contacto">
       <div class="contenedor">
         <div class="contacto">
-          <h2>Contacto</h2>
-          <p>Escribinos y te respondemos a la brevedad.</p>
-          <p><strong>Email:</strong> <a href="mailto:hola@devuelta.com.ar">hola@devuelta.com.ar</a></p>
-          <p><strong>Ubicación:</strong> Carmen de Patagones, Buenos Aires, Argentina</p>
+          <h2>Volvé a lo que te apasiona</h2>
+          <p>Empezamos con una charla de 15 minutos: nos contás cómo das hoy los turnos y te mostramos cómo funcionaría tu asistente. Sin compromiso.</p>
+          <p><a class="boton" href="https://wa.me/5492213147922?text=%C2%A1Hola%20Sol%21%20Vi%20la%20web%20de%20Devuelta%20y%20quiero%20un%20asistente%20para%20mis%20turnos.%20Te%20cuento%20c%C3%B3mo%20trabajo%20hoy%3A" target="_blank" rel="noopener">Quiero un asistente para mis turnos</a></p>
         </div>
       </div>
     </section>
@@ -75,9 +156,47 @@
 
   <footer>
     <div class="contenedor">
-      <p><strong>Devuelta</strong> es el nombre comercial de María Soledad Galván · CUIT 27-33002670-2 · Roque Sáenz Peña 60, Carmen de Patagones, Buenos Aires, Argentina.</p>
+      <p>© 2026 Devuelta. Todos los derechos reservados.</p>
       <p><a href="privacidad.html">Política de privacidad</a> · <a href="privacidad.html#eliminacion">Eliminación de datos</a></p>
     </div>
   </footer>
+<script>
+// Conversación de ejemplo: aparece mensaje a mensaje, como en la demo.
+// Sin JavaScript o con "reducir movimiento" activado, se ve completa.
+(function () {
+  var chat = document.getElementById("chat");
+  if (!chat || !("IntersectionObserver" in window)) return;
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var piezas = chat.querySelectorAll(".msg, .chat-aviso");
+  var estado = document.getElementById("chatEstado");
+  // [momento en ms, qué pasa]: número = mostrar esa pieza; "e" = escribiendo; "l" = en línea
+  var guion = [[600, 0], [1500, "e"], [3200, 1], [3200, "l"], [5200, 2], [6200, "e"], [8000, 3], [8000, "l"], [9200, 4]];
+  var timers = [], corriendo = false;
+  chat.classList.add("animado");
+  function reiniciar() {
+    piezas.forEach(function (p) { p.classList.remove("visible"); });
+    estado.textContent = "en línea";
+  }
+  function correr() {
+    corriendo = true;
+    reiniciar();
+    guion.forEach(function (paso) {
+      timers.push(setTimeout(function () {
+        if (paso[1] === "e") estado.textContent = "escribiendo…";
+        else if (paso[1] === "l") estado.textContent = "en línea";
+        else piezas[paso[1]].classList.add("visible");
+      }, paso[0]));
+    });
+    timers.push(setTimeout(correr, 15000));
+  }
+  function frenar() { timers.forEach(clearTimeout); timers = []; corriendo = false; }
+  new IntersectionObserver(function (entradas) {
+    entradas.forEach(function (e) {
+      if (e.isIntersecting && !corriendo) correr();
+      else if (!e.isIntersecting && corriendo) frenar();
+    });
+  }, { threshold: 0.4 }).observe(chat);
+})();
+</script>
 </body>
 </html>
