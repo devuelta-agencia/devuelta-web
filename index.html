@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Devuelta · Que tu negocio no dependa de tu memoria y del WhatsApp</title>
   <meta name="description" content="Para profesionales que trabajan con turnos: un asistente responde por WhatsApp, da, cambia y cancela turnos y los anota en tu calendario de Google. Sin instalar nada.">
-  <link rel="stylesheet" href="styles.css?v=8">
+  <link rel="stylesheet" href="styles.css?v=10">
 </head>
 <body>
   <header>
@@ -22,9 +22,9 @@
 
   <main>
     <div class="contenedor hero">
-      <span class="etiqueta">De vuelta a lo que te apasiona</span>
+      <span class="etiqueta">Tu WhatsApp no duerme. Vos sí.</span>
       <h1>Tu negocio no tiene por qué depender de tu memoria y del WhatsApp.</h1>
-      <p>Para profesionales que trabajan con turnos: un asistente responde por WhatsApp a cualquier hora, da, cambia y cancela turnos y los anota en tu calendario. Vos te sacás eso de encima y volvés a lo que te gusta.</p>
+      <p>Para profesionales que trabajan con turnos: un asistente responde por WhatsApp a cualquier hora, da, cambia y cancela turnos y los anota en tu calendario. Vos te sacás de encima lo pesado y volvés a lo importante.</p>
       <a class="boton" href="https://wa.me/5492213147922?text=%C2%A1Hola%20Sol%21%20Vi%20la%20web%20de%20Devuelta%20y%20quiero%20un%20asistente%20para%20mis%20turnos.%20Te%20cuento%20c%C3%B3mo%20trabajo%20hoy%3A" target="_blank" rel="noopener">Quiero un asistente para mis turnos</a>
       <p class="hero-secundario">o <a href="test/index.html">calculá cuánto te cuesta hoy</a>, en 2 minutos</p>
     </div>
@@ -79,12 +79,13 @@
           </div>
           <div>
             <ol class="pasos checklist">
-              <li><strong>Da, cambia y cancela turnos</strong>, siempre dentro de tus horarios.</li>
-              <li><strong>Conversa como lo haría una persona.</strong> Con calidez, entendiendo cómo escribe la gente ("a las 7" es a las 19) y también los audios. Del otro lado, no se siente como hablar con un robot.</li>
-              <li><strong>Responde a cualquier hora</strong>, también a las 22, cuando vos ya cerraste.</li>
-              <li><strong>Anota cada turno en tu calendario de Google</strong>, para que veas tu agenda donde ya la mirás.</li>
-              <li><strong>Ni vos ni tus clientes instalan nada.</strong> Todo sigue igual, pero con un asistente que te saca el trabajo pesado de encima.</li>
-              <li><strong>Sabe cuándo pasarte la posta.</strong> Si una consulta necesita de vos, como una duda puntual sobre un tratamiento o un caso especial, no improvisa: le avisa a tu cliente que le vas a responder vos.</li>
+              <li><strong>Da, cambia y cancela turnos,</strong> dentro de tus horarios.</li>
+              <li><strong>Recuerda cada turno un día antes</strong> y pide confirmación. Menos ausencias y cancelaciones de último momento.</li>
+              <li><strong>Conversa como una persona.</strong> Entiende "a las 7" y también los audios.</li>
+              <li><strong>Responde a cualquier hora,</strong> también cuando ya cerraste.</li>
+              <li><strong>Anota cada turno</strong> en tu calendario de Google.</li>
+              <li><strong>Nadie instala nada.</strong> Tus clientes te siguen escribiendo por WhatsApp.</li>
+              <li><strong>Sabe cuándo pasarte la posta.</strong> Si algo necesita de vos, no improvisa: le avisa a tu cliente que vas a responder vos.</li>
             </ol>
           </div>
         </div>
@@ -167,7 +168,7 @@
   var chat = document.getElementById("chat");
   if (!chat || !("IntersectionObserver" in window)) return;
   if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  var piezas = chat.querySelectorAll(".msg, .chat-aviso");
+  var piezas = chat.querySelectorAll(".msg, .chat-aviso, .chat-fecha");
   var estado = document.getElementById("chatEstado");
   // [momento en ms, qué pasa]: número = mostrar esa pieza; "e" = escribiendo; "l" = en línea
   var guion = [[600, 0], [1500, "e"], [3200, 1], [3200, "l"], [5200, 2], [6200, "e"], [8000, 3], [8000, "l"], [9200, 4]];
@@ -184,7 +185,7 @@
       timers.push(setTimeout(function () {
         if (paso[1] === "e") estado.textContent = "escribiendo…";
         else if (paso[1] === "l") estado.textContent = "en línea";
-        else piezas[paso[1]].classList.add("visible");
+        else if (piezas[paso[1]]) piezas[paso[1]].classList.add("visible");
       }, paso[0]));
     });
     timers.push(setTimeout(correr, 15000));
