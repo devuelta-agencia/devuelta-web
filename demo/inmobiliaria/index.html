@@ -175,16 +175,16 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 }
 @media (prefers-reduced-motion: reduce) { .btn.te-toca, .replies button:not(:disabled), .switch button.pendiente { animation: none; outline: 2px solid var(--accent); outline-offset: 2px; } .premio { animation: none; } }
 </style>
-
 </head>
 <body>
+
 <section class="vencida-aviso" id="vencida" hidden>
   <p>Esta demo ya no está disponible.</p>
   <a class="btn main" href="https://devuelta.com.ar" target="_top">Conocé Devuelta</a>
 </section>
 <script>
 // La demo vence en esta fecha: lleva al sitio de Devuelta y, si el navegador no lo permite, muestra el aviso de arriba.
-if (Date.now() >= new Date("2026-11-08T23:59:00-03:00").getTime()) {
+if (Date.now() >= new Date("2026-11-30T23:59:00-03:00").getTime()) {
   document.documentElement.classList.add("vencida");
   document.getElementById("vencida").hidden = false;
   try { location.replace("https://devuelta.com.ar"); } catch (e) {}
@@ -200,7 +200,7 @@ if (Date.now() >= new Date("2026-11-08T23:59:00-03:00").getTime()) {
 
   <section class="intro" id="intro">
     <h1>¡Hola! Te damos la bienvenida.</h1>
-    <p>Esta demo muestra cómo un agente de WhatsApp podría encargarse de los avisos de alquileres y las consultas de tu inmobiliaria. Elegí una historia, avanzá con Siguiente y jugá un poco. Al final vas a encontrar una calculadora para ver en números lo que te cuesta hoy esa tarea.</p>
+    <p>Esta demo muestra cómo un agente de WhatsApp podría encargarse de los avisos de alquileres y las consultas de tu inmobiliaria. Elegí una historia, avanzá con Siguiente y jugá un poco: algunos botones del chat también responden. Al final vas a encontrar una calculadora para ver en números lo que te cuesta hoy esa tarea.</p>
     <button type="button" class="btn main solo-movil" id="empezar">Empezar</button>
     <button type="button" class="link" id="toCalc">Ir directo a la calculadora</button>
   </section>
@@ -289,17 +289,17 @@ const STORIES = {
     steps: [
       { when: "Hoy", show: "b", say: "Todos los meses alguien busca el índice, hace las cuentas contrato por contrato y le escribe a cada inquilino. Vamos a seguir a Marcela." },
       { when: "21/11, 9:00", show: "b", say: "Faltan diez días para el aumento de Marcela. Las cuentas ya están hechas. Vos solo las revisás.",
-        b: [{ t: "Buen día. Este mes ajustan 7 contratos. Te dejo las cuentas para que las mires:\n\nMarcela R.: $480.000 → $520.320 (IPC 8,4 %)\ny 6 más.", h: "9:00", replies: ["Aprobar y avisar"] }] },
+        b: [{ t: "¡Buen día! ☀️ Este mes ajustan 7 contratos. Te dejo las cuentas para que las mires:\n\nMarcela R.: $480.000 → $520.320 (IPC 8,4 %)\ny 6 más.", h: "9:00", replies: ["Aprobar y avisar"] }] },
       { when: "21/11, 9:04", show: "a", say: "Cuatro minutos después, los siete inquilinos ya tienen su aviso. Nadie copió un mensaje.",
         b: [{ me: 1, t: "Aprobar y avisar", h: "9:04" }],
-        a: [{ t: "Hola Marcela. Según tu contrato, desde el 1/12 tu alquiler pasa de $480.000 a $520.320 (IPC del trimestre: 8,4 %). Si tenés dudas, escribime por acá.", h: "9:04" }] },
+        a: [{ t: "¡Hola Marcela! ¿Cómo estás? 😊 Te escribimos de la inmobiliaria para avisarte que, como indica tu contrato, desde el 1/12 tu alquiler se actualiza: pasa de $480.000 a $520.320 (IPC del trimestre: 8,4 %). Cualquier duda, escribinos por acá.", h: "9:04" }] },
       { when: "21/11, 19:30", show: "a", say: "Lo que está en el contrato, lo responde. Lo demás te lo pasa a vos, con el motivo.",
-        a: [{ me: 1, t: "Hola, ¿hasta qué día puedo pagar?", h: "19:30" }, { t: "Hasta el 10 de cada mes, como dice tu contrato.", h: "19:30" }, { me: 1, t: "Gracias. Otra cosa: tengo una pérdida en el baño.", h: "19:31" }, { t: "Se lo paso a la inmobiliaria y te contactan en horario de oficina.", h: "19:31" }],
+        a: [{ me: 1, t: "Hola, ¿hasta qué día puedo pagar?", h: "19:30" }, { t: "¡Hola Marcela! Tenés tiempo hasta el 10 de cada mes, como figura en tu contrato 😊", h: "19:30" }, { me: 1, t: "Gracias. Otra cosa: tengo una pérdida en el baño.", h: "19:31" }, { t: "Uy, qué macana. Ya le paso el aviso a la inmobiliaria para que te contacten en horario de oficina. Gracias por avisar a tiempo 🙏", h: "19:31" }],
         b: [{ t: "Marcela R. avisa que tiene una pérdida en el baño. Le dije que la contactan en horario de oficina.", h: "19:31" }] },
       { when: "10/12, 18:00", show: "a", say: "El día del vencimiento, le recuerda solo a quien todavía no figura como pagado.",
-        a: [{ t: "Hola Marcela. Hoy vence tu alquiler de $520.320. Si ya pagaste, ignorá este mensaje.", h: "18:00" }, { me: 1, t: "Uh, me olvidé. Mañana te transfiero.", h: "18:12" }, { t: "Gracias por avisar. Queda anotado.", h: "18:12" }] },
+        a: [{ t: "¡Hola Marcela! 👋 Te recordamos que hoy vence tu alquiler de $520.320. Si ya lo pagaste, no tengas en cuenta este mensaje. ¡Gracias!", h: "18:00" }, { me: 1, t: "Uh, me olvidé. Mañana te transfiero.", h: "18:12" }, { t: "¡Gracias por avisarnos, Marcela! Queda anotado 🙌", h: "18:12" }] },
       { when: "11/12, 9:00", show: "b", say: "Ya no hace falta revisar los sesenta contratos. Sabés a qué tres personas llamar.",
-        b: [{ t: "Buen día. Alquileres de este mes:\n\n52 pagaron.\n5 avisaron que pagan esta semana, entre ellos Marcela R.\n3 no respondieron: Julián P., Ana G. y Ramón T. A esos te conviene llamarlos.", h: "9:00" }] }
+        b: [{ t: "¡Buen día! ☀️ Alquileres de este mes:\n\n52 pagaron.\n5 avisaron que pagan esta semana, entre ellos Marcela R.\n3 no respondieron: Julián P., Ana G. y Ramón T. A esos te conviene llamarlos.", h: "9:00" }] }
     ],
     fields: [
       { id: "contratos", label: "Contratos que administrás", value: 60 },
@@ -323,14 +323,23 @@ const STORIES = {
     steps: [
       { when: "Sábado, 22:40", show: "a", say: "La oficina está cerrada. Lucía le escribe a varias inmobiliarias a la vez.",
         a: [{ me: 1, t: "Hola, vi el departamento de 2 ambientes en alquiler. ¿Sigue disponible?", h: "22:40" }] },
-      { when: "Sábado, 22:40", show: "a", say: "Le responden en segundos, con los datos de tu listado.",
-        a: [{ t: "Hola Lucía. Sí, sigue disponible: $450.000 por mes más $60.000 de expensas. ¿Para cuántas personas es y qué garantía tenés?", h: "22:40" }] },
+      { when: "Sábado, 22:40", show: "a", say: "Le responden en segundos, con calidez y con los datos de tu listado.",
+        a: [{ t: "¡Hola Lucía! Gracias por escribirnos 😊 Sí, el depto de 2 ambientes sigue disponible: son $450.000 por mes más $60.000 de expensas.\n\nPara ayudarte mejor, ¿para cuántas personas sería y con qué garantía contás?", h: "22:40" }] },
       { when: "Sábado, 22:42", show: "a", say: "Hace las preguntas que harías vos y agenda la visita en tu calendario.",
-        a: [{ me: 1, t: "Somos 2. Tengo garantía propietaria.", h: "22:42" }, { t: "Perfecto. Podés visitarlo el lunes a las 10 o el martes a las 17. ¿Cuál preferís?", h: "22:42" }, { me: 1, t: "Lunes a las 10.", h: "22:43" }, { t: "Listo, lunes a las 10. Te lo recuerdo el domingo a la tarde.", h: "22:43" }] },
+        a: [{ me: 1, t: "Somos 2. Tengo garantía propietaria.", h: "22:42" }, { t: "¡Genial! Podés visitarlo el lunes a las 10 o el martes a las 17. ¿Qué te queda mejor?", h: "22:42" }, { me: 1, t: "Lunes a las 10.", h: "22:43" }, { t: "¡Listo, Lucía! Te esperamos el lunes a las 10 🏠 El domingo te mando un recordatorio.", h: "22:43" }] },
       { when: "Sábado, 22:44", show: "a", say: "Cuando no tiene un dato, lo dice y te lo pasa. No inventa.",
-        a: [{ me: 1, t: "¿Aceptan mascotas?", h: "22:44" }, { t: "Ese dato no lo tengo y no quiero decirte algo incorrecto. Se lo paso a la inmobiliaria y te responden el lunes.", h: "22:44" }] },
+        a: [{ me: 1, t: "¿Aceptan mascotas?", h: "22:44" }, { t: "Buena pregunta. Ese dato no lo tengo confirmado y prefiero no decirte algo incorrecto. Ya se lo consulto a la inmobiliaria y te escribimos el lunes a primera hora 🙌", h: "22:44" }] },
+      { when: "Domingo, 10:00", show: "a", say: "24 horas antes, le recuerda la visita. Menos ausencias y nadie tuvo que acordarse.",
+        a: [{ t: "¡Hola Lucía! 👋 Te recuerdo tu visita de mañana, lunes a las 10, al depto de 2 ambientes. ¿Seguís pudiendo venir?", h: "10:00", replies: ["Sí, confirmo"] }] },
+      { when: "Domingo, 10:05", show: "a", say: "Si confirma, queda anotado. Si no puede, la reprograma sin que intervengas.",
+        a: [{ me: 1, t: "Sí, confirmo 👍", h: "10:05" }, { t: "¡Perfecto! Te esperamos mañana. Que tengas lindo domingo ☀️", h: "10:05" }] },
       { when: "Lunes, 8:30", show: "b", say: "Llegás el lunes con la agenda armada y sabiendo a quién vas a ver.",
-        b: [{ t: "Buen día. Este fin de semana:\n\n9 consultas.\n4 buscan algo que tenés.\n2 visitas agendadas.\n\nHoy a las 10 viene Lucía M.: 2 personas, garantía propietaria. Te dejó una pregunta: ¿aceptan mascotas?", h: "8:30", replies: ["Responderle a Lucía"] }] }
+        b: [{ t: "¡Buen día! ☀️ Este fin de semana:\n\n9 consultas.\n4 buscan algo que tenés.\n2 visitas agendadas, las dos confirmadas.\n\nHoy a las 10 viene Lucía M.: 2 personas, garantía propietaria. Te dejó una pregunta: ¿aceptan mascotas?", h: "8:30", replies: ["Responderle a Lucía"] }] },
+      { when: "Lunes, 8:32", show: "b", say: "Respondés en una línea, desde tu WhatsApp. El asistente se lo hace llegar a Lucía.",
+        b: [{ me: 1, t: "Sí, acepta mascotas chicas.", h: "8:32" }, { t: "¡Listo! Ya se lo mandé a Lucía ✔️", h: "8:32" }],
+        a: [{ t: "¡Buen día, Lucía! Te cuento que desde la inmobiliaria me confirmaron que sí, se aceptan mascotas chicas 🐶 ¡Te esperamos hoy a las 10!", h: "8:32" }] },
+      { when: "Lunes, 8:40", show: "a", say: "Lucía llega a la visita con todo resuelto. Vos respondiste una sola pregunta.",
+        a: [{ me: 1, t: "¡Qué bueno! Gracias, ahí estaré 😊", h: "8:40" }] }
     ],
     fields: [
       { id: "porSemana", label: "Consultas por semana", value: 40 },
@@ -606,6 +615,5 @@ window.addEventListener("hashchange", fromHash);
 fromHash();
 registrar("abrio", step + 1, story);
 </script>
-
 </body>
 </html>
